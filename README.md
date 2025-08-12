@@ -149,28 +149,6 @@ export type AppRouter = typeof appRouter;
 
 ## Frontend: tRPC + TanStack Query (options proxy)
 
-The client is set up in `apps/web/src/trpc/client.ts` using `createTRPCClient` and `createTRPCOptionsProxy`:
-
-```ts
-// apps/web/src/trpc/client.ts
-import { QueryClient } from '@tanstack/react-query';
-import { createTRPCClient, httpBatchLink } from '@trpc/client';
-import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
-import type { AppRouter } from '@zohan/api/trpc/routers/_app';
-import superjson from 'superjson';
-
-export const queryClient = new QueryClient();
-
-export const trpcClient = createTRPCClient<AppRouter>({
-  links: [httpBatchLink({ url: '/trpc', transformer: superjson })],
-});
-
-export const trpc = createTRPCOptionsProxy<AppRouter>({
-  client: trpcClient,
-  queryClient,
-});
-```
-
 Provide the `QueryClient` and router in `apps/web/src/App.tsx` (already wired):
 
 ```tsx
@@ -253,9 +231,3 @@ NODE_ENV=development
 - Root: `pnpm dev`, `pnpm build`
 - API: `pnpm --filter @zohan/api dev | build`
 - Web: `pnpm --filter @zohan/web dev | build | preview`
-
----
-
-## License
-
-MIT
