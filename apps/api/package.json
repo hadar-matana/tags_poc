@@ -8,7 +8,10 @@
     "./db/schema": "./db/schema.ts",
     "./db/types": "./db/types.ts",
     "./db/queries": "./db/queries.ts",
-    "./types/geojson": "./types/geojson.ts"
+    "./types/geojson": "./types/geojson.ts",
+    "./types/tree-api-types": "./types/tree-api-types.ts",
+    "./services/tree-entities-client": "./services/tree-entities-client.ts",
+    "./config/tree-entities": "./config/tree-entities.ts"
   },
   "scripts": {
     "dev": "cross-env PORT=3000 tsx watch index.ts",

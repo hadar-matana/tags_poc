@@ -1,11 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { ApiTester } from '../components/api-tester';
 
 function HomePage() {
-  return (
-    <div className="h-[calc(100vh-var(--header-height))] flex items-center justify-center">
-      <h1 className="text-6xl font-bold">Zohan Template</h1>
-    </div>
-  );
+  return <ApiTester />;
 }
 
 export const Route = createFileRoute('/')({

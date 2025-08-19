@@ -1,8 +1,8 @@
 import { router } from '../init';
-import { exampleRouter } from './example';
+import { treeEntitiesRouter } from './tree-api-service';
 
 export const appRouter = router({
-  example: exampleRouter,
+  treeEntities: treeEntitiesRouter,
 });
 
 export type AppRouter = typeof appRouter;
