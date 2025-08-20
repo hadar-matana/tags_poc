@@ -84,7 +84,7 @@ export class TreeApiClient {
 
       allEntities = allEntities.concat(response.entities_list);
 
-      if (response.entities_list.length < pageSize || !response.nextPage) {
+      if (response.entities_list.length < pageSize) {
         hasMore = false;
       } else {
         from += pageSize;

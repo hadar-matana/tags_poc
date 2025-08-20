@@ -3,10 +3,6 @@
 export interface ExclusiveId {
   dataStore: string;
   tableId: string;
-  entityId: string;
-  valueListId: string;
-  treeOfValuestId: string;
-  sequence: number;
 }
 
 export interface TreeOfValuesNode {
@@ -42,9 +38,9 @@ export interface Geo {
 }
 
 export interface Classification {
-  triangleId: string;
-  c1: number;
-  publishProcedure: string;
+  triangle: string;
+  clearance_level: number;
+  publish_procedure: string;
 }
 
 export interface EntityProperties {
@@ -52,12 +48,7 @@ export interface EntityProperties {
 }
 
 export interface TableEntity {
-  exclusiveId: string;
-  tableId: string;
-  entityId: string;
-  vlaueListId: string;
-  treeOfValuestId: string;
-  sequence: number;
+  exclusiveId: ExclusiveId;
   link: string;
   geo: Geo;
   classification: Classification;
@@ -66,8 +57,6 @@ export interface TableEntity {
 }
 
 export interface TableEntitiesResponse {
-  total_entities: number;
-  nextPage: string;
   entities_list: TableEntity[];
 }
 

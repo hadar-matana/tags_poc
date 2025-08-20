@@ -13,11 +13,7 @@ function generateMockTreeOfValues(tableId: string, fieldId: string) {
   return {
     exclusiveId: {
       dataStore: `datastore-tree`,
-      tableId: tableId,
-      entityId: `entity-${fieldId}`,
-      valueListId: `value-list-${tableId}-${fieldId}`,
-      treeOfValuestId: `tree-${tableId}-${fieldId}`,
-      sequence: 1
+      tableId: tableId
     },
     type: `tree-type-${tableId}`,
     name: `Tree of Values for Table ${tableId}`,
@@ -29,14 +25,14 @@ function generateMockTreeOfValues(tableId: string, fieldId: string) {
           {
             name: `Category A - ${fieldId}`,
             children: [
-              { name: `Subcategory A1 - ${tableId}` },
-              { name: `Subcategory A2 - ${fieldId}` }
+              { name: `Subcategory A1 - ${tableId}`, children: [] },
+              { name: `Subcategory A2 - ${fieldId}`, children: [] }
             ]
           },
           {
             name: `Category B - ${tableId}`,
             children: [
-              { name: `Subcategory B1 - ${fieldId}` }
+              { name: `Subcategory B1 - ${fieldId}`, children: [] }
             ]
           }
         ]
@@ -51,12 +47,10 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
   
   for (let i = from; i <= Math.min(to, totalEntities); i++) {
     entities.push({
-      exclusiveId: `exclusive-${tableId}-${i}`,
-      tableId: tableId,
-      entityId: `entity-${tableId}-${i}`,
-      vlaueListId: `value-list-${tableId}-${i}`,
-      treeOfValuestId: `tree-${tableId}-${i}`,
-      sequence: i,
+      exclusiveId: {
+        dataStore: `datastore-${tableId}`,
+        tableId: tableId
+      },
       link: `https://mock-link.com/${tableId}/entity/${i}`,
       geo: {
         wkt: `POINT(34.${7800 + i} 32.${800 + i})`,
@@ -67,9 +61,9 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
         }
       },
       classification: {
-        triangleId: `triangle-${tableId}-${i}`,
-        c1: i,
-        publishProcedure: `procedure-${tableId}-${i}`
+        triangle: `triangle-${tableId}-${i}`,
+        clearance_level: i,
+        publish_procedure: `procedure-${tableId}-${i}`
       },
       date: `2024-01-${String(i).padStart(2, '0')}T10:30:00Z`,
       properties: {
@@ -83,8 +77,6 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
   }
 
   return {
-    total_entities: totalEntities,
-    nextPage: to < totalEntities ? `page-${to + 1}` : null,
     entities_list: entities
   };
 }
@@ -95,12 +87,10 @@ function generateMockAllTableEntities(tableId: string, pageSize: number = 100, s
   
   for (let i = 1; i <= totalEntities; i++) {
     allEntities.push({
-      exclusiveId: `exclusive-${tableId}-${i}`,
-      tableId: tableId,
-      entityId: `entity-${tableId}-${i}`,
-      vlaueListId: `value-list-${tableId}-${i}`,
-      treeOfValuestId: `tree-${tableId}-${i}`,
-      sequence: i,
+      exclusiveId: {
+        dataStore: `datastore-${tableId}`,
+        tableId: tableId
+      },
       link: `https://mock-link.com/${tableId}/entity/${i}`,
       geo: {
         wkt: `POINT(34.${7800 + i} 32.${800 + i})`,
@@ -111,9 +101,9 @@ function generateMockAllTableEntities(tableId: string, pageSize: number = 100, s
         }
       },
       classification: {
-        triangleId: `triangle-${tableId}-${i}`,
-        c1: i,
-        publishProcedure: `procedure-${tableId}-${i}`
+        triangle: `triangle-${tableId}-${i}`,
+        clearance_level: i,
+        publish_procedure: `procedure-${tableId}-${i}`
       },
       date: `2024-01-${String(i).padStart(2, '0')}T10:30:00Z`,
       properties: {
