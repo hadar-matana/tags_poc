@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@zohan/ui/button';
 import { Input } from '@zohan/ui/input';
 import { Label } from '@zohan/ui/label';
@@ -8,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@zohan/ui/tabs';
 import { Badge } from '@zohan/ui/badge';
 import { Separator } from '@zohan/ui/separator';
 import { AlertCircle, Database, TreePine, Loader2, CheckCircle } from 'lucide-react';
+import { trpc } from '../trpc/client';
 
 interface ApiResponse {
   data?: any;
@@ -19,7 +21,6 @@ type RouteType = 'treeOfValues' | 'tableEntities';
 
 export const ApiTester = () => {
   const [selectedRoute, setSelectedRoute] = useState<RouteType>('treeOfValues');
-  const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,65 +35,52 @@ export const ApiTester = () => {
     table_id: '',
     from: '1',
     to: '100',
-    sort_by: 'CreationTime'
+    sort_by: 'CreationTime',
+    filter: ''
   });
 
-  const handleTreeOfValuesSubmit = async () => {
+  // tRPC queries
+  const treeOfValuesQuery = useQuery({
+    ...trpc.treeEntities.getTreeOfValues.queryOptions({ 
+      table_id: treeParams.table_id, 
+      field_id: treeParams.field_id 
+    }),
+    enabled: false
+  });
+
+  const tableEntitiesQuery = useQuery({
+    ...trpc.treeEntities.getTableEntities.queryOptions({
+      table_id: tableParams.table_id,
+      from: parseInt(tableParams.from),
+      to: parseInt(tableParams.to),
+      sort_by: tableParams.sort_by,
+      filter: tableParams.filter || undefined
+    }),
+    enabled: false
+  });
+
+  const isLoading = treeOfValuesQuery.isFetching || tableEntitiesQuery.isFetching;
+
+  const handleTreeOfValuesSubmit = () => {
     if (!treeParams.table_id || !treeParams.field_id) {
       setError('Please fill in all required fields');
       return;
     }
 
-    setIsLoading(true);
     setError(null);
     setResponse(null);
-
-    try {
-      const url = `http://localhost:3001/v2.0/Tree/TreeOfValues/${treeParams.table_id}/${treeParams.field_id}`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      setResponse({
-        data,
-        status: response.status
-      });
-    } catch (err) {
-      setError(`Failed to fetch data: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setIsLoading(false);
-    }
+    treeOfValuesQuery.refetch();
   };
 
-  const handleTableEntitiesSubmit = async () => {
+  const handleTableEntitiesSubmit = () => {
     if (!tableParams.table_id) {
       setError('Please fill in the table_id field');
       return;
     }
 
-    setIsLoading(true);
     setError(null);
     setResponse(null);
-
-    try {
-      const queryParams = new URLSearchParams({
-        from: tableParams.from,
-        to: tableParams.to,
-        sort_by: tableParams.sort_by
-      });
-      
-      const url = `http://localhost:3001/v3.0/Tree/${tableParams.table_id}/TableEntities?${queryParams}`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      setResponse({
-        data,
-        status: response.status
-      });
-    } catch (err) {
-      setError(`Failed to fetch data: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setIsLoading(false);
-    }
+    tableEntitiesQuery.refetch();
   };
 
   const handleSubmit = () => {
@@ -102,6 +90,37 @@ export const ApiTester = () => {
       handleTableEntitiesSubmit();
     }
   };
+
+  // Handle query results with useEffect
+  useEffect(() => {
+    if (treeOfValuesQuery.data && selectedRoute === 'treeOfValues') {
+      setResponse({
+        data: treeOfValuesQuery.data,
+        status: 200
+      });
+    }
+  }, [treeOfValuesQuery.data, selectedRoute]);
+
+  useEffect(() => {
+    if (tableEntitiesQuery.data && selectedRoute === 'tableEntities') {
+      setResponse({
+        data: { entities_list: tableEntitiesQuery.data },
+        status: 200
+      });
+    }
+  }, [tableEntitiesQuery.data, selectedRoute]);
+
+  useEffect(() => {
+    if (treeOfValuesQuery.error) {
+      setError(`Failed to fetch data: ${treeOfValuesQuery.error.message}`);
+    }
+  }, [treeOfValuesQuery.error]);
+
+  useEffect(() => {
+    if (tableEntitiesQuery.error) {
+      setError(`Failed to fetch data: ${tableEntitiesQuery.error.message}`);
+    }
+  }, [tableEntitiesQuery.error]);
 
   const handleRouteChange = (value: string) => {
     setSelectedRoute(value as RouteType);
@@ -255,9 +274,19 @@ export const ApiTester = () => {
                       className="mt-1"
                     />
                   </div>
+                  <div>
+                    <Label htmlFor="table-filter">New Param</Label>
+                    <Input
+                      id="table-filter"
+                      value={tableParams.filter}
+                      onChange={(e) => setTableParams(prev => ({ ...prev, filter: e.target.value }))}
+                      placeholder="Enter new parameter value..."
+                      className="mt-1"
+                    />
+                  </div>
                   <div className="pt-2">
                     <Badge variant="outline" className="text-xs">
-                      Route: GET /v3.0/Tree/{tableParams.table_id || '{table_id}'}/TableEntities?from={tableParams.from}&to={tableParams.to}&sort_by={tableParams.sort_by}
+                      Route: POST /v3.0/Tree/{tableParams.table_id || '{table_id}'}/TableEntities
                     </Badge>
                   </div>
                 </TabsContent>

@@ -135,6 +135,25 @@ app.get('/v3.0/Tree/:table_id/TableEntities', (req, res) => {
   res.json(mockData);
 });
 
+app.post('/v3.0/Tree/:table_id/TableEntities', (req, res) => {
+  const { table_id } = req.params;
+  const { from, to, sort_by } = req.query;
+  const { filter } = req.body || {};
+  
+  console.log(`Mock API: POST /v3.0/Tree/${table_id}/TableEntities`);
+  console.log('  Query params:', req.query);
+  console.log('  Body:', req.body);
+  console.log('  Extracted values:', { from, to, sort_by, filter });
+  
+  const mockData = generateMockTableEntities(
+    table_id, 
+    parseInt(from) || 1, 
+    parseInt(to) || 100, 
+    sort_by || 'CreationTime'
+  );
+  res.json(mockData);
+});
+
 // Handle tRPC requests with dynamic data generation
 app.post('/trpc/treeEntities.getTreeOfValues', (req, res) => {
   const { table_id, field_id } = req.body || {};
@@ -189,6 +208,7 @@ app.listen(PORT, () => {
   console.log('Available mock endpoints:');
   console.log('  - GET /v2.0/Tree/TreeOfValues/{table_id}/{field_id} (REST API)');
   console.log('  - GET /v3.0/Tree/{table_id}/TableEntities?from=1&to=100&sort_by=CreationTime (REST API)');
+  console.log('  - POST /v3.0/Tree/{table_id}/TableEntities (REST API)');
   console.log('  - POST /trpc/treeEntities.getTreeOfValues (tRPC)');
   console.log('  - POST /trpc/treeEntities.getTableEntities (tRPC)');
 
