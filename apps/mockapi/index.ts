@@ -39,11 +39,14 @@ function generateMockTreeOfValues(tableId: string, fieldId: string) {
   };
 }
 
-function generateMockTableEntities(tableId: string, from: number = 1, to: number = 10, sortBy: string = 'CreationTime') {
+function generateMockTableEntities(tableId: string, from: number = 1, to: number = 10, sortBy: string = 'CreationTime', filter?: string) {
   const entities: any[] = [];
   const totalEntities = 10;
   
+  // Generate all entities first
   for (let i = from; i <= Math.min(to, totalEntities); i++) {
+    const entityName = `Entity ${i} from Table ${tableId}`;
+    
     entities.push({
       exclusiveId: {
         dataStore: `datastore-${tableId}`,
@@ -65,7 +68,7 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
       },
       date: `2024-01-${String(i).padStart(2, '0')}T10:30:00Z`,
       properties: {
-        name: `Entity ${i} from Table ${tableId}`,
+        name: entityName,
         description: `This is entity ${i} from table ${tableId}`,
         status: i % 2 === 0 ? 'active' : 'inactive',
         category: `category-${i % 3}`,
@@ -74,16 +77,24 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
     });
   }
 
+  // Apply filter if specified
+  const filteredEntities = filter 
+    ? entities.filter(entity => entity.properties.name === filter)
+    : entities;
+
   return {
-    entities_list: entities
+    entities_list: filteredEntities
   };
 }
 
-function generateMockAllTableEntities(tableId: string, pageSize: number = 100, sortBy: string = 'CreationTime') {
+function generateMockAllTableEntities(tableId: string, pageSize: number = 100, sortBy: string = 'CreationTime', filter?: string) {
   const allEntities: any[] = [];
   const totalEntities = 150;
   
+  // Generate all entities first
   for (let i = 1; i <= totalEntities; i++) {
+    const entityName = `Entity ${i} from Table ${tableId}`;
+    
     allEntities.push({
       exclusiveId: {
         dataStore: `datastore-${tableId}`,
@@ -105,7 +116,7 @@ function generateMockAllTableEntities(tableId: string, pageSize: number = 100, s
       },
       date: `2024-01-${String(i).padStart(2, '0')}T10:30:00Z`,
       properties: {
-        name: `Entity ${i} from Table ${tableId}`,
+        name: entityName,
         description: `This is entity ${i} from table ${tableId}`,
         status: i % 2 === 0 ? 'active' : 'inactive',
         category: `category-${i % 3}`,
@@ -114,7 +125,12 @@ function generateMockAllTableEntities(tableId: string, pageSize: number = 100, s
     });
   }
 
-  return allEntities;
+  // Apply filter if specified
+  const filteredEntities = filter 
+    ? allEntities.filter(entity => entity.properties.name === filter)
+    : allEntities;
+
+  return filteredEntities;
 }
 
 // REST API endpoints (for Chrome testing)
@@ -128,42 +144,56 @@ app.get('/v2.0/Tree/TreeOfValues/:table_id/:field_id', (req: any, res: any) => {
 
 app.get('/v2.0/Tree/TableEntities/:table_id', (req: any, res: any) => {
   const { table_id } = req.params;
-  const { from, to, sort_by } = req.query;
-  console.log(`Mock API: GET /v2.0/Tree/TableEntities/${table_id}`, { from, to, sort_by });
+  const { from, to, sort_by, filter } = req.query;
+  console.log(`Mock API: GET /v2.0/Tree/TableEntities/${table_id}`, { from, to, sort_by, filter });
   
   const mockData = generateMockTableEntities(
     table_id, 
     parseInt(from) || 1, 
     parseInt(to) || 10, 
-    sort_by || 'CreationTime'
+    sort_by || 'CreationTime',
+    filter
   );
   res.json(mockData);
 });
 
 app.get('/v2.0/Tree/AllTableEntities/:table_id', (req: any, res: any) => {
   const { table_id } = req.params;
-  const { pageSize, sort_by } = req.query;
-  console.log(`Mock API: GET /v2.0/Tree/AllTableEntities/${table_id}`, { pageSize, sort_by });
+  const { pageSize, sort_by, filter } = req.query;
+  console.log(`Mock API: GET /v2.0/Tree/AllTableEntities/${table_id}`, { pageSize, sort_by, filter });
   
-  const mockData = generateMockAllTableEntities(
-    table_id, 
-    parseInt(pageSize) || 100, 
-    sort_by || 'CreationTime'
-  );
+  const mockData = generateMockAllTableEntities(table_id, pageSize, sort_by, filter);
   res.json(mockData);
 });
 
-// v3.0 endpoint for TableEntities
 app.get('/v3.0/Tree/:table_id/TableEntities', (req: any, res: any) => {
   const { table_id } = req.params;
-  const { from, to, sort_by } = req.query;
-  console.log(`Mock API: GET /v3.0/Tree/${table_id}/TableEntities`, { from, to, sort_by });
+  const { from, to, sort_by, filter } = req.query;
+  console.log(`Mock API: GET /v3.0/Tree/${table_id}/TableEntities`, { from, to, sort_by, filter });
   
   const mockData = generateMockTableEntities(
     table_id, 
     parseInt(from) || 1, 
     parseInt(to) || 100, 
-    sort_by || 'CreationTime'
+    sort_by || 'CreationTime',
+    filter
+  );
+  res.json(mockData);
+});
+
+// v3.0 endpoint for TableEntities (POST - new implementation)
+app.post('/v3.0/Tree/:table_id/TableEntities', (req: any, res: any) => {
+  const { table_id } = req.params;
+  const { from, to, sort_by } = req.query;
+  const { filter} = req.body || {};
+  console.log(`Mock API: POST /v3.0/Tree/${table_id}/TableEntities`, { from, to, sort_by, filter});
+  
+  const mockData = generateMockTableEntities(
+    table_id, 
+    parseInt(from) || 1, 
+    parseInt(to) || 100, 
+    sort_by || 'CreationTime',
+    filter
   );
   res.json(mockData);
 });
@@ -185,8 +215,8 @@ app.post('/trpc/treeEntities.getTreeOfValues', (req: any, res: any) => {
 });
 
 app.post('/trpc/treeEntities.getTableEntities', (req: any, res: any) => {
-  const { table_id, from, to, sort_by } = req.body || {};
-  console.log(`Mock API: POST /trpc/treeEntities.getTableEntities`, { table_id, from, to, sort_by });
+  const { table_id, from, to, sort_by, filter } = req.body || {};
+  console.log(`Mock API: POST /trpc/treeEntities.getTableEntities`, { table_id, from, to, sort_by, filter });
   
   if (!table_id) {
     return res.status(400).json({
@@ -195,13 +225,13 @@ app.post('/trpc/treeEntities.getTableEntities', (req: any, res: any) => {
     });
   }
   
-  const mockData = generateMockTableEntities(table_id, from, to, sort_by);
+  const mockData = generateMockTableEntities(table_id, from, to, sort_by, filter);
   res.json({ result: { data: mockData } });
 });
 
 app.post('/trpc/treeEntities.getAllTableEntities', (req: any, res: any) => {
-  const { table_id, pageSize, sort_by } = req.body || {};
-  console.log(`Mock API: POST /trpc/treeEntities.getAllTableEntities`, { table_id, pageSize, sort_by });
+  const { table_id, pageSize, sort_by, filter } = req.body || {};
+  console.log(`Mock API: POST /trpc/treeEntities.getAllTableEntities`, { table_id, pageSize, sort_by, filter });
   
   if (!table_id) {
     return res.status(400).json({
@@ -210,11 +240,11 @@ app.post('/trpc/treeEntities.getAllTableEntities', (req: any, res: any) => {
     });
   }
   
-  const mockData = generateMockAllTableEntities(table_id, pageSize, sort_by);
+  const mockData = generateMockAllTableEntities(table_id, pageSize, sort_by, filter);
   res.json({ result: { data: mockData } });
 });
 
-// Note: All endpoints now use dynamic data generation
+// Note: All endpoints now use dynamic data generation with filtering support
 
 // Health check endpoint
 app.get('/health', (req: any, res: any) => {
@@ -236,12 +266,15 @@ app.listen(PORT, () => {
   console.log(`🚀 Mock API server running on port ${PORT}`);
   console.log('Available mock endpoints:');
   console.log('  - GET /v2.0/Tree/TreeOfValues/{table_id}/{field_id} (REST API)');
-  console.log('  - GET /v2.0/Tree/TableEntities/{table_id}?from=1&to=10&sort_by=CreationTime (REST API)');
-  console.log('  - GET /v2.0/Tree/AllTableEntities/{table_id}?pageSize=100&sort_by=CreationTime (REST API)');
-  console.log('  - GET /v3.0/Tree/{table_id}/TableEntities?from=1&to=100&sort_by=CreationTime (REST API)');
+  console.log('  - GET /v2.0/Tree/TableEntities/{table_id}?from=1&to=10&sort_by=CreationTime&filter=filter_value (REST API)');
+  console.log('  - GET /v2.0/Tree/AllTableEntities/{table_id}?pageSize=100&sort_by=CreationTime&nefilter=filter_value (REST API)');
+  console.log('  - GET /v3.0/Tree/{table_id}/TableEntities?from=1&to=100&sort_by=CreationTime&filter=filter_value (REST API)');
+  console.log('  - POST /v3.0/Tree/{table_id}/TableEntities (REST API)');
   console.log('  - POST /trpc/treeEntities.getTreeOfValues (tRPC)');
-  console.log('  - POST /trpc/treeEntities.getTableEntities (tRPC)');
-  console.log('  - POST /trpc/treeEntities.getAllTableEntities (tRPC)');
+  console.log('  - POST /trpc/treeEntities.getTableEntities (tRPC) - supports filter filtering');
+  console.log('  - POST /trpc/treeEntities.getAllTableEntities (tRPC) - supports filter ram filtering');
 
   console.log('  - GET /health');
+  console.log('');
+  console.log('Filtering: Use filter to filter entities where properties.name equals the specified value');
 });

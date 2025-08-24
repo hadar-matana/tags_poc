@@ -14,7 +14,7 @@
     "./config/tree-entities": "./config/tree-entities.ts"
   },
   "scripts": {
-    "dev": "cross-env PORT=3000 TREE_ENTITIES_API_BASE_URL=http://localhost:3001 tsx watch index.ts",
+    "dev": "cross-env tsx watch index.ts",
     "build": "node esbuild.build.mjs",
     "db:generate": "cross-env PORT=3000 drizzle-kit generate",
     "db:migrate": "cross-env PORT=3000 drizzle-kit migrate",
@@ -36,7 +36,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.0.0",
     "drizzle-orm": "^0.44.2",
-    "express": "^5.1.0",
+    "express": "^4.18.2",
     "mime-types": "^3.0.1",
     "mongoose": "^8.15.2",
     "officeparser": "^5.1.1",
@@ -54,7 +54,7 @@
     "@zohan/eslint-config": "workspace:*",
     "@zohan/typescript-config": "workspace:*",
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
+    "@types/express": "^4.17.21",
     "@types/mime-types": "^3.0.1",
     "@types/pg": "^8.15.4",
     "@types/utm": "^1.1.4",

@@ -74,3 +74,10 @@ export interface TableEntitiesParams {
   sort_by?: string;
   filter: string;
 }
+
+export interface GetAllTableEntitiesParamsInput {
+  table_id: string;
+  pageSize?: number;
+  sort_by?: string;
+  filter: string;
+}

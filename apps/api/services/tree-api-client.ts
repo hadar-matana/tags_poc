@@ -3,7 +3,8 @@ import type {
   TableEntitiesResponse, 
   TreeOfValuesParams, 
   TableEntitiesParams, 
-  TableEntity 
+  TableEntity,
+  GetAllTableEntitiesParamsInput
 } from '../types/tree-api-types';
 import { treeEntitiesConfig, treeEntitiesEndpoints } from '../config/tree-entities';
 
@@ -43,6 +44,36 @@ export class TreeApiClient {
     }
   }
 
+  private async makePostRequest<T>(url: string, body: any): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), treeEntitiesConfig.timeout);
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout');
+      }
+      
+      throw error;
+    }
+  }
+
   async getTreeOfValues(params: TreeOfValuesParams): Promise<TreeOfValuesResponse> {
     const { table_id, field_id } = params;
     const endpoint = treeEntitiesEndpoints.treeOfValues(table_id, field_id);
@@ -56,20 +87,32 @@ export class TreeApiClient {
       table_id, 
       from = 1, 
       to = treeEntitiesConfig.defaultPageSize, 
-      sort_by = treeEntitiesConfig.defaultSortBy 
+      sort_by = treeEntitiesConfig.defaultSortBy,
+      filter
     } = params;
     
     const endpoint = treeEntitiesEndpoints.tableEntities(table_id, from, to, sort_by);
     const url = `${this.baseUrl}${endpoint}`;
 
-    return this.makeRequest<TableEntitiesResponse>(url);
+    const requestBody: any = {};
+
+    if (filter) {
+      console.log('TreeApiClient: NODE_ENV =', process.env.NODE_ENV);
+      if (process.env.NODE_ENV === 'development') {
+        // In development, send filter as-is in request body
+        console.log('TreeApiClient: Using development mode - sending filter:', filter);
+        requestBody.filter = filter;
+      } else {
+
+      }
+    }
+
+    return this.makePostRequest<TableEntitiesResponse>(url, requestBody);
   }
 
-  async getAllTableEntities(
-    table_id: string,
-    pageSize: number = treeEntitiesConfig.defaultPageSize,
-    sort_by: string = treeEntitiesConfig.defaultSortBy
-  ): Promise<TableEntity[]> {
+  async getAllTableEntities(params: GetAllTableEntitiesParamsInput): Promise<TableEntity[]> {
+    const { table_id, pageSize = 100, sort_by, filter } = params;
+
     let allEntities: TableEntity[] = [];
     let from = 1;
     let hasMore = true;
@@ -80,6 +123,7 @@ export class TreeApiClient {
         from,
         to: from + pageSize - 1,
         sort_by,
+        filter,
       });
 
       allEntities = allEntities.concat(response.entities_list);
