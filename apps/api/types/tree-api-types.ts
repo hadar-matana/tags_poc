@@ -72,4 +72,5 @@ export interface TableEntitiesParams {
   from?: number;
   to?: number;
   sort_by?: string;
+  filter: string;
 }

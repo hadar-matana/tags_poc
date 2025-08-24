@@ -14,7 +14,7 @@
     "./config/tree-entities": "./config/tree-entities.ts"
   },
   "scripts": {
-    "dev": "cross-env PORT=3000 tsx watch index.ts",
+    "dev": "cross-env PORT=3000 TREE_ENTITIES_API_BASE_URL=http://localhost:3001 tsx watch index.ts",
     "build": "node esbuild.build.mjs",
     "db:generate": "cross-env PORT=3000 drizzle-kit generate",
     "db:migrate": "cross-env PORT=3000 drizzle-kit migrate",

@@ -22,19 +22,17 @@ function generateMockTreeOfValues(tableId: string, fieldId: string) {
       {
         name: `Root Node - ${tableId}`,
         children: [
-          {
-            name: `Category A - ${fieldId}`,
-            children: [
-              { name: `Subcategory A1 - ${tableId}`, children: [] },
-              { name: `Subcategory A2 - ${fieldId}`, children: [] }
-            ]
-          },
-          {
-            name: `Category B - ${tableId}`,
-            children: [
-              { name: `Subcategory B1 - ${fieldId}`, children: [] }
-            ]
-          }
+          ...Array.from({ length: 10 }, (_, i) => {
+            const idx = i + 1;
+            return {
+              name: `Category ${String.fromCharCode(64 + idx)} - ${tableId}`,
+              children: [
+                ...Array.from({length: 10}, (_ ,j) => {
+                  return { name: `Subcategory ${String.fromCharCode(64 + idx)}.${j + 1} - ${fieldId}` };
+                }),
+              ]
+            };
+          })
         ]
       }
     ]

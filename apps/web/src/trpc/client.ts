@@ -9,7 +9,7 @@ export const queryClient = new QueryClient();
 export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: '/trpc',
+      url: 'http://localhost:3000/trpc',
       transformer: superjson,
     }),
   ],
