@@ -6,14 +6,14 @@ import {
   getAllTableEntitiesSchema,
   getTableEntitiesSchema,
 } from './tree-api-validation-schemas';
+const treeApiClient = TreeApiClient.getInstance();
 
-const treeApiClient = new TreeApiClient();
 
 export const treeEntitiesRouter = router({
   getTreeOfValues: publicProcedure
     .input(getTreeOfValuesSchema)
     .query(async ({ input }): Promise<TreeOfValuesResponse> => {
-      return await treeApiClient.getTreeOfValues(input);
+      return treeApiClient.getTreeOfValues(input);
     }),
 
   getTableEntities: publicProcedure
@@ -28,6 +28,6 @@ export const treeEntitiesRouter = router({
   getAllTableEntities: publicProcedure
     .input(getAllTableEntitiesSchema)
     .query(async ({ input }): Promise<TableEntity[]> => {
-      return await treeApiClient.getAllTableEntities(input);
+      return treeApiClient.getAllTableEntities(input);
     }),
 });

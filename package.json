@@ -9,5 +9,8 @@
   },
   "dependencies": {
     "turbo": "^2.5.4"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.16"
   }
 }

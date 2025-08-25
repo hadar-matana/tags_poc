@@ -54,7 +54,7 @@ export const ApiTester = () => {
       from: parseInt(tableParams.from),
       to: parseInt(tableParams.to),
       sort_by: tableParams.sort_by,
-      filter: tableParams.filter || undefined
+      filter: tableParams.filter
     }),
     enabled: false
   });
@@ -275,7 +275,7 @@ export const ApiTester = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="table-filter">New Param</Label>
+                    <Label htmlFor="table-filter"> filter</Label>
                     <Input
                       id="table-filter"
                       value={tableParams.filter}

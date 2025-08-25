@@ -39,7 +39,7 @@ function generateMockTreeOfValues(tableId: string, fieldId: string) {
   };
 }
 
-function generateMockTableEntities(tableId: string, from: number = 1, to: number = 10, sortBy: string = 'CreationTime', filter?: string) {
+function generateMockTableEntities(tableId: string, from: number = 1, to: number = 10, sortBy: string = 'CreationTime', filter: string) {
   const entities: any[] = [];
   const totalEntities = 10;
   
@@ -87,7 +87,7 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
   };
 }
 
-function generateMockAllTableEntities(tableId: string, pageSize: number = 100, sortBy: string = 'CreationTime', filter?: string) {
+function generateMockAllTableEntities(tableId: string, pageSize: number = 100, sortBy: string = 'CreationTime', filter: string) {
   const allEntities: any[] = [];
   const totalEntities = 150;
   

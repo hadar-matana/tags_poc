@@ -18,6 +18,8 @@ app.use('/*', (req, res) => {
   });
 });
 
+
+// this is abit overkill, just do try catch, morse readable
 const startServer = async () => {
   app.listen(env.PORT, () => {
     console.log(`Server running on port ${env.PORT}`);

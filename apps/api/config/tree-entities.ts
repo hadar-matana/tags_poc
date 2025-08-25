@@ -1,6 +1,8 @@
 import { config } from 'dotenv';
 import { resolve } from 'path';
 
+
+// you already loaded the env in the env.ts
 config({ path: resolve('.env') });
 
 

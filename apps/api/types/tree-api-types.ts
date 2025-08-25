@@ -1,4 +1,6 @@
-// Tree Entities API Types
+import type { GeoJsonObject } from "geojson";
+
+ //Tree Entities API Types
 
 export interface ExclusiveId {
   dataStore: string;
@@ -18,23 +20,11 @@ export interface TreeOfValuesResponse {
   treeOfValues: TreeOfValuesNode[];
 }
 
-// Table Entities API Types
-
-export interface GeoJsonGeometry {
-  type: string;
-  coordinates: string;
-  geometries?: GeoJsonGeometry[];
-}
-
-export interface GeoJson {
-  type: string;
-  coordinates: string;
-  geometries: GeoJsonGeometry[];
-}
+ //Table Entities API Types
 
 export interface Geo {
   wkt: string;
-  geoJson: GeoJson;
+  geoJson: GeoJsonObject;
 }
 
 export interface Classification {
@@ -60,7 +50,7 @@ export interface TableEntitiesResponse {
   entities_list: TableEntity[];
 }
 
-// Request Parameters Types
+ //Request Parameters Types
 
 export interface TreeOfValuesParams {
   table_id: string;
@@ -79,5 +69,9 @@ export interface GetAllTableEntitiesParamsInput {
   table_id: string;
   pageSize?: number;
   sort_by?: string;
+  filter: string;
+}
+
+export interface TableEntitiesRequestBody {
   filter: string;
 }

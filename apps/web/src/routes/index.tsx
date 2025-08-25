@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { UsersList } from '@/components/users-list';
+import { ApiTester } from '@/components/api-tester';
 
 function HomePage() {
-  return <UsersList />;
+  return <ApiTester />;
 }
 
 export const Route = createFileRoute('/')({

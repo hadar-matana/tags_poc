@@ -4,82 +4,33 @@ import type {
   TreeOfValuesParams, 
   TableEntitiesParams, 
   TableEntity,
-  GetAllTableEntitiesParamsInput
+  GetAllTableEntitiesParamsInput,
+  TableEntitiesRequestBody
 } from '../types/tree-api-types';
 import { treeEntitiesConfig, treeEntitiesEndpoints } from '../config/tree-entities';
+import { HttpClient } from './http-client';
+
 
 export class TreeApiClient {
-  private baseUrl: string;
+  private static instance: TreeApiClient;
+  private httpClient: HttpClient;
 
-  constructor(baseUrl?: string) {
-    this.baseUrl = (baseUrl || treeEntitiesConfig.baseUrl).replace(/\/$/, '');
+  private constructor(baseUrl?: string) {
+    const processedBaseUrl = this.processBaseUrl(baseUrl);
+    this.httpClient = new HttpClient(processedBaseUrl);
   }
 
-  private async makeRequest<T>(url: string): Promise<T> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), treeEntitiesConfig.timeout);
-
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      clearTimeout(timeoutId);
-      
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout');
-      }
-      
-      throw error;
+  public static getInstance(baseUrl?: string): TreeApiClient {
+    if (!TreeApiClient.instance) {
+      TreeApiClient.instance = new TreeApiClient(baseUrl);
     }
-  }
-
-  private async makePostRequest<T>(url: string, body: any): Promise<T> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), treeEntitiesConfig.timeout);
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      clearTimeout(timeoutId);
-      
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout');
-      }
-      
-      throw error;
-    }
+    return TreeApiClient.instance;
   }
 
   async getTreeOfValues(params: TreeOfValuesParams): Promise<TreeOfValuesResponse> {
     const { table_id, field_id } = params;
     const endpoint = treeEntitiesEndpoints.treeOfValues(table_id, field_id);
-    const url = `${this.baseUrl}${endpoint}`;
-
-    return this.makeRequest<TreeOfValuesResponse>(url);
+    return this.httpClient.get<TreeOfValuesResponse>(endpoint);
   }
 
   async getTableEntities(params: TableEntitiesParams): Promise<TableEntitiesResponse> {
@@ -92,22 +43,14 @@ export class TreeApiClient {
     } = params;
     
     const endpoint = treeEntitiesEndpoints.tableEntities(table_id, from, to, sort_by);
-    const url = `${this.baseUrl}${endpoint}`;
 
-    const requestBody: any = {};
+    const requestBody: TableEntitiesRequestBody = { filter };
 
-    if (filter) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('TreeApiClient: NODE_ENV =', process.env.NODE_ENV);
-      if (process.env.NODE_ENV === 'development') {
-        // In development, send filter as-is in request body
-        console.log('TreeApiClient: Using development mode - sending filter:', filter);
-        requestBody.filter = filter;
-      } else {
-
-      }
     }
 
-    return this.makePostRequest<TableEntitiesResponse>(url, requestBody);
+    return this.httpClient.post<TableEntitiesResponse>(endpoint, requestBody);
   }
 
   async getAllTableEntities(params: GetAllTableEntitiesParamsInput): Promise<TableEntity[]> {
@@ -136,5 +79,9 @@ export class TreeApiClient {
     }
 
     return allEntities;
+  }
+
+  private processBaseUrl(baseUrl?: string): string {
+    return (baseUrl || treeEntitiesConfig.baseUrl).replace(/\/$/, '');
   }
 }
