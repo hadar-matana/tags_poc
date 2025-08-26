@@ -65,12 +65,6 @@ export interface TableEntitiesParams {
   filter: string;
 }
 
-export interface GetAllTableEntitiesParamsInput {
-  table_id: string;
-  pageSize?: number;
-  sort_by?: string;
-  filter: string;
-}
 
 export interface TableEntitiesRequestBody {
   filter: string;

@@ -4,20 +4,20 @@ import type {
   TreeOfValuesParams, 
   TableEntitiesParams, 
   TableEntity,
-  GetAllTableEntitiesParamsInput,
   TableEntitiesRequestBody
 } from '../types/tree-api-types';
-import { treeEntitiesConfig, treeEntitiesEndpoints } from '../config/tree-entities';
+import type { GetAllTableEntitiesInput } from '../trpc/routers/tree-api-validation-schemas';
+import { treeEntitiesConfig, treeEntitiesEndpoints } from '../config';
 import { HttpClient } from './http-client';
-
 
 export class TreeApiClient {
   private static instance: TreeApiClient;
-  private httpClient: HttpClient;
+  private httpClient?: HttpClient;
+  private baseUrl?: string;
+  private processedBaseUrl?: string;
 
   private constructor(baseUrl?: string) {
-    const processedBaseUrl = this.processBaseUrl(baseUrl);
-    this.httpClient = new HttpClient(processedBaseUrl);
+    this.baseUrl = baseUrl;
   }
 
   public static getInstance(baseUrl?: string): TreeApiClient {
@@ -27,35 +27,44 @@ export class TreeApiClient {
     return TreeApiClient.instance;
   }
 
-  async getTreeOfValues(params: TreeOfValuesParams): Promise<TreeOfValuesResponse> {
-    const { table_id, field_id } = params;
-    const endpoint = treeEntitiesEndpoints.treeOfValues(table_id, field_id);
-    return this.httpClient.get<TreeOfValuesResponse>(endpoint);
+  private getHttpClient(): HttpClient {
+    if (!this.httpClient) {
+      this.processedBaseUrl = this.processBaseUrl(this.baseUrl);
+      this.httpClient = new HttpClient(this.processedBaseUrl);
+    }
+    return this.httpClient;
   }
 
-  async getTableEntities(params: TableEntitiesParams): Promise<TableEntitiesResponse> {
-    const { 
-      table_id, 
-      from = 1, 
-      to = treeEntitiesConfig.defaultPageSize, 
-      sort_by = treeEntitiesConfig.defaultSortBy,
-      filter
-    } = params;
-    
-    const endpoint = treeEntitiesEndpoints.tableEntities(table_id, from, to, sort_by);
+  async getTreeOfValues({ table_id, field_id }: TreeOfValuesParams): Promise<TreeOfValuesResponse> {
+    const endpoint = treeEntitiesEndpoints.treeOfValues(table_id, field_id);
+    return this.getHttpClient().get<TreeOfValuesResponse>(endpoint);
+  }
 
+  async getTableEntities({ 
+    table_id, 
+    from = 1, 
+    to = treeEntitiesConfig.defaultPageSize, 
+    sort_by = treeEntitiesConfig.defaultSortBy,
+    filter
+  }: TableEntitiesParams): Promise<TableEntitiesResponse> {
+    const endpoint = treeEntitiesEndpoints.tableEntities(table_id, from, to, sort_by);
     const requestBody: TableEntitiesRequestBody = { filter };
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('TreeApiClient: NODE_ENV =', process.env.NODE_ENV);
-    }
+    const response = await this.getHttpClient().post<TableEntitiesResponse>(endpoint, requestBody);
 
-    return this.httpClient.post<TableEntitiesResponse>(endpoint, requestBody);
+    const shouldNormalize =
+      this.shouldPreferImageProxy() &&
+      Array.isArray(response.entities_list) &&
+      response.entities_list.some(e => e?.properties?.originalImg);
+
+    const entities = shouldNormalize
+      ? this.normalizeImageUrls(response.entities_list)
+      : response.entities_list;
+
+    return { ...response, entities_list: entities };
   }
 
-  async getAllTableEntities(params: GetAllTableEntitiesParamsInput): Promise<TableEntity[]> {
-    const { table_id, pageSize = 100, sort_by, filter } = params;
-
+  async getAllTableEntities({ table_id, pageSize = 100, sort_by, filter }: GetAllTableEntitiesInput): Promise<TableEntity[]> {
     let allEntities: TableEntity[] = [];
     let from = 1;
     let hasMore = true;
@@ -81,7 +90,31 @@ export class TreeApiClient {
     return allEntities;
   }
 
+
   private processBaseUrl(baseUrl?: string): string {
     return (baseUrl || treeEntitiesConfig.baseUrl).replace(/\/$/, '');
+  }
+
+  private shouldPreferImageProxy(): boolean {
+    return Boolean(treeEntitiesConfig.useTrpcImageUrls);
+  }
+
+    
+  private normalizeImageUrls(entities: TableEntity[]): TableEntity[] {
+    const base = this.processedBaseUrl || this.processBaseUrl(this.baseUrl);
+
+    return entities.map(entity => {
+      if (entity?.properties?.originalImg) {
+        const preferredImageUrl = `${base}/api/image/${entity.exclusiveId.dataStore}/${entity.exclusiveId.tableId}`;
+        return {
+          ...entity,
+          properties: {
+            ...entity.properties,
+            img: preferredImageUrl,
+          },
+        };
+      }
+      return entity;
+    });
   }
 }

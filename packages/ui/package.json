@@ -10,6 +10,7 @@
     "./button": "./src/components/button.tsx",
     "./input": "./src/components/input.tsx",
     "./label": "./src/components/label.tsx",
+    "./skeleton": "./src/components/skeleton.tsx",
     "./card": "./src/components/card.tsx",
     "./badge": "./src/components/badge.tsx",
     "./checkbox": "./src/components/checkbox.tsx",

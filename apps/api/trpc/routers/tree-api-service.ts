@@ -1,12 +1,17 @@
 import { publicProcedure, router } from '../init';
 import { TreeApiClient } from '../../services/tree-api-client';
+import { ImageApiClient } from '../../services/image-api-client';
 import type { TreeOfValuesResponse, TableEntity } from '../../types/tree-api-types';
+import type { ImageServiceResponse } from '../../types/image-api-types';
 import {
   getTreeOfValuesSchema,
   getAllTableEntitiesSchema,
   getTableEntitiesSchema,
+  getImageUrlSchema,
 } from './tree-api-validation-schemas';
+
 const treeApiClient = TreeApiClient.getInstance();
+const imageApiClient = ImageApiClient.getInstance();
 
 
 export const treeEntitiesRouter = router({
@@ -29,5 +34,12 @@ export const treeEntitiesRouter = router({
     .input(getAllTableEntitiesSchema)
     .query(async ({ input }): Promise<TableEntity[]> => {
       return treeApiClient.getAllTableEntities(input);
+    }),
+
+  getImageUrl: publicProcedure
+    .input(getImageUrlSchema)
+    .query(async ({ input }): Promise<ImageServiceResponse> => {
+      console.log('tRPC getImageUrl called with exclusiveId:', input.exclusiveId);
+      return imageApiClient.getImageUrl(input.exclusiveId);
     }),
 });

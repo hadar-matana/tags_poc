@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
-import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
+import { createTRPCReact } from '@trpc/react-query';
 import type { AppRouter } from '@zohan/api/trpc/routers/_app';
 import superjson from 'superjson';
 
@@ -15,7 +15,4 @@ export const trpcClient = createTRPCClient<AppRouter>({
   ],
 });
 
-export const trpc = createTRPCOptionsProxy<AppRouter>({
-  client: trpcClient,
-  queryClient,
-});
+export const trpc = createTRPCReact<AppRouter>();

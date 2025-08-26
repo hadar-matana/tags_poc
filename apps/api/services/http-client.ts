@@ -1,72 +1,62 @@
-import { treeEntitiesConfig } from '../config/tree-entities';
+import axios from 'axios';
+import type { AxiosInstance } from 'axios';
+import { treeEntitiesConfig } from '../config';
 
 export class HttpClient {
+  private axiosInstance?: AxiosInstance;
   private baseUrl: string;
-  private timeout: number;
+  private timeout?: number;
 
   constructor(baseUrl: string, timeout?: number) {
-    this.baseUrl = baseUrl.replace(/\/$/, '');
-    this.timeout = timeout || treeEntitiesConfig.timeout;
+    this.baseUrl = baseUrl;
+    this.timeout = timeout;
   }
 
-  async get<T>(endpoint: string): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      clearTimeout(timeoutId);
-      
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout');
-      }
-      
-      throw error;
+  private getAxiosInstance(): AxiosInstance {
+    if (!this.axiosInstance) {
+      this.axiosInstance = this.initializeAxiosInstance();
     }
+    return this.axiosInstance;
   }
 
-  async post<T>(endpoint: string, body: any): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+  private initializeAxiosInstance(): AxiosInstance {
+    const processedBaseUrl = this.baseUrl.replace(/\/$/, '');
+    const configTimeout = this.timeout || treeEntitiesConfig.timeout;
 
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: controller.signal,
+    return axios.create({
+      baseURL: processedBaseUrl,
+      timeout: configTimeout,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+
+  get<T>(endpoint: string): Promise<T> {
+    return this.getAxiosInstance().get<T>(endpoint)
+      .then(response => response.data)
+      .catch(error => {
+        if (axios.isAxiosError(error)) {
+          if (error.code === 'ECONNABORTED') {
+            throw new Error('Request timeout');
+          }
+          throw new Error(`HTTP error! status: ${error.response?.status || 'unknown'}`);
+        }
+        throw error;
       });
+  }
 
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      clearTimeout(timeoutId);
-      
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout');
-      }
-      
-      throw error;
-    }
+  post<T>(endpoint: string, body: any): Promise<T> {
+    return this.getAxiosInstance().post<T>(endpoint, body)
+      .then(response => response.data)
+      .catch(error => {
+        if (axios.isAxiosError(error)) {
+          if (error.code === 'ECONNABORTED') {
+            throw new Error('Request timeout');
+          }
+          throw new Error(`HTTP error! status: ${error.response?.status || 'unknown'}`);
+        }
+        throw error;
+      });
   }
 }
