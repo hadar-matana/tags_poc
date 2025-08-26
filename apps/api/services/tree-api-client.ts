@@ -4,115 +4,67 @@ import type {
   TreeOfValuesParams, 
   TableEntitiesParams, 
   TableEntity,
-  GetAllTableEntitiesParamsInput
+  TableEntitiesRequestBody
 } from '../types/tree-api-types';
-import { treeEntitiesConfig, treeEntitiesEndpoints } from '../config/tree-entities';
+import type { GetAllTableEntitiesInput } from '../trpc/routers/tree-api-validation-schemas';
+import { treeEntitiesConfig, treeEntitiesEndpoints } from '../config';
+import { HttpClient } from './http-client';
 
 export class TreeApiClient {
-  private baseUrl: string;
+  private static instance: TreeApiClient;
+  private httpClient?: HttpClient;
+  private baseUrl?: string;
+  private processedBaseUrl?: string;
 
-  constructor(baseUrl?: string) {
-    this.baseUrl = (baseUrl || treeEntitiesConfig.baseUrl).replace(/\/$/, '');
+  private constructor(baseUrl?: string) {
+    this.baseUrl = baseUrl;
   }
 
-  private async makeRequest<T>(url: string): Promise<T> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), treeEntitiesConfig.timeout);
-
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      clearTimeout(timeoutId);
-      
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout');
-      }
-      
-      throw error;
+  public static getInstance(baseUrl?: string): TreeApiClient {
+    if (!TreeApiClient.instance) {
+      TreeApiClient.instance = new TreeApiClient(baseUrl);
     }
+    return TreeApiClient.instance;
   }
 
-  private async makePostRequest<T>(url: string, body: any): Promise<T> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), treeEntitiesConfig.timeout);
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      clearTimeout(timeoutId);
-      
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout');
-      }
-      
-      throw error;
+  private getHttpClient(): HttpClient {
+    if (!this.httpClient) {
+      this.processedBaseUrl = this.processBaseUrl(this.baseUrl);
+      this.httpClient = new HttpClient(this.processedBaseUrl);
     }
+    return this.httpClient;
   }
 
-  async getTreeOfValues(params: TreeOfValuesParams): Promise<TreeOfValuesResponse> {
-    const { table_id, field_id } = params;
+  async getTreeOfValues({ table_id, field_id }: TreeOfValuesParams): Promise<TreeOfValuesResponse> {
     const endpoint = treeEntitiesEndpoints.treeOfValues(table_id, field_id);
-    const url = `${this.baseUrl}${endpoint}`;
-
-    return this.makeRequest<TreeOfValuesResponse>(url);
+    return this.getHttpClient().get<TreeOfValuesResponse>(endpoint);
   }
 
-  async getTableEntities(params: TableEntitiesParams): Promise<TableEntitiesResponse> {
-    const { 
-      table_id, 
-      from = 1, 
-      to = treeEntitiesConfig.defaultPageSize, 
-      sort_by = treeEntitiesConfig.defaultSortBy,
-      filter
-    } = params;
-    
+  async getTableEntities({ 
+    table_id, 
+    from = 1, 
+    to = treeEntitiesConfig.defaultPageSize, 
+    sort_by = treeEntitiesConfig.defaultSortBy,
+    filter
+  }: TableEntitiesParams): Promise<TableEntitiesResponse> {
     const endpoint = treeEntitiesEndpoints.tableEntities(table_id, from, to, sort_by);
-    const url = `${this.baseUrl}${endpoint}`;
+    const requestBody: TableEntitiesRequestBody = { filter };
 
-    const requestBody: any = {};
+    const response = await this.getHttpClient().post<TableEntitiesResponse>(endpoint, requestBody);
 
-    if (filter) {
-      console.log('TreeApiClient: NODE_ENV =', process.env.NODE_ENV);
-      if (process.env.NODE_ENV === 'development') {
-        // In development, send filter as-is in request body
-        console.log('TreeApiClient: Using development mode - sending filter:', filter);
-        requestBody.filter = filter;
-      } else {
+    const shouldNormalize =
+      this.shouldPreferImageProxy() &&
+      Array.isArray(response.entities_list) &&
+      response.entities_list.some(e => e?.properties?.originalImg);
 
-      }
-    }
+    const entities = shouldNormalize
+      ? this.normalizeImageUrls(response.entities_list)
+      : response.entities_list;
 
-    return this.makePostRequest<TableEntitiesResponse>(url, requestBody);
+    return { ...response, entities_list: entities };
   }
 
-  async getAllTableEntities(params: GetAllTableEntitiesParamsInput): Promise<TableEntity[]> {
-    const { table_id, pageSize = 100, sort_by, filter } = params;
-
+  async getAllTableEntities({ table_id, pageSize = 100, sort_by, filter }: GetAllTableEntitiesInput): Promise<TableEntity[]> {
     let allEntities: TableEntity[] = [];
     let from = 1;
     let hasMore = true;
@@ -136,5 +88,33 @@ export class TreeApiClient {
     }
 
     return allEntities;
+  }
+
+
+  private processBaseUrl(baseUrl?: string): string {
+    return (baseUrl || treeEntitiesConfig.baseUrl).replace(/\/$/, '');
+  }
+
+  private shouldPreferImageProxy(): boolean {
+    return Boolean(treeEntitiesConfig.useTrpcImageUrls);
+  }
+
+    
+  private normalizeImageUrls(entities: TableEntity[]): TableEntity[] {
+    const base = this.processedBaseUrl || this.processBaseUrl(this.baseUrl);
+
+    return entities.map(entity => {
+      if (entity?.properties?.originalImg) {
+        const preferredImageUrl = `${base}/api/image/${entity.exclusiveId.dataStore}/${entity.exclusiveId.tableId}`;
+        return {
+          ...entity,
+          properties: {
+            ...entity.properties,
+            img: preferredImageUrl,
+          },
+        };
+      }
+      return entity;
+    });
   }
 }

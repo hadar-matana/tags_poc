@@ -8,6 +8,10 @@
     "build": "turbo run build"
   },
   "dependencies": {
+    "@tanstack/react-router-devtools": "^1.131.27",
     "turbo": "^2.5.4"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.16"
   }
 }

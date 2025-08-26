@@ -39,7 +39,7 @@ function generateMockTreeOfValues(tableId: string, fieldId: string) {
   };
 }
 
-function generateMockTableEntities(tableId: string, from: number = 1, to: number = 10, sortBy: string = 'CreationTime', filter?: string) {
+function generateMockTableEntities(tableId: string, from: number = 1, to: number = 10, sortBy: string = 'CreationTime', filter: string) {
   const entities: any[] = [];
   const totalEntities = 10;
   
@@ -72,13 +72,14 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
         description: `This is entity ${i} from table ${tableId}`,
         status: i % 2 === 0 ? 'active' : 'inactive',
         category: `category-${i % 3}`,
-        sortBy: sortBy
+        sortBy: sortBy,
+        originalImg: `https://picsum.photos/400/300?random=${tableId}-${i}`
       }
     });
   }
 
   // Apply filter if specified
-  const filteredEntities = filter 
+  const filteredEntities = filter && filter !== '{}' && filter !== 'null'
     ? entities.filter(entity => entity.properties.name === filter)
     : entities;
 
@@ -87,7 +88,7 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
   };
 }
 
-function generateMockAllTableEntities(tableId: string, pageSize: number = 100, sortBy: string = 'CreationTime', filter?: string) {
+function generateMockAllTableEntities(tableId: string, pageSize: number = 100, sortBy: string = 'CreationTime', filter: string) {
   const allEntities: any[] = [];
   const totalEntities = 150;
   
@@ -120,13 +121,14 @@ function generateMockAllTableEntities(tableId: string, pageSize: number = 100, s
         description: `This is entity ${i} from table ${tableId}`,
         status: i % 2 === 0 ? 'active' : 'inactive',
         category: `category-${i % 3}`,
-        sortBy: sortBy
+        sortBy: sortBy,
+        originalImg: `https://picsum.photos/400/300?random=${tableId}-${i}`
       }
     });
   }
 
   // Apply filter if specified
-  const filteredEntities = filter 
+  const filteredEntities = filter && filter !== '{}' && filter !== 'null'
     ? allEntities.filter(entity => entity.properties.name === filter)
     : allEntities;
 
@@ -134,17 +136,14 @@ function generateMockAllTableEntities(tableId: string, pageSize: number = 100, s
 }
 
 // REST API endpoints (for Chrome testing)
-app.get('/v2.0/Tree/TreeOfValues/:table_id/:field_id', (req: any, res: any) => {
-  const { table_id, field_id } = req.params;
+app.get('/v2.0/Tree/TreeOfValues/:table_id/:field_id', ({ params: { table_id, field_id } }: any, res: any) => {
   console.log(`Mock API: GET /v2.0/Tree/TreeOfValues/${table_id}/${field_id}`);
   
   const mockData = generateMockTreeOfValues(table_id, field_id);
   res.json(mockData);
 });
 
-app.get('/v2.0/Tree/TableEntities/:table_id', (req: any, res: any) => {
-  const { table_id } = req.params;
-  const { from, to, sort_by, filter } = req.query;
+app.get('/v2.0/Tree/TableEntities/:table_id', ({ params: { table_id }, query: { from, to, sort_by, filter } }: any, res: any) => {
   console.log(`Mock API: GET /v2.0/Tree/TableEntities/${table_id}`, { from, to, sort_by, filter });
   
   const mockData = generateMockTableEntities(
@@ -157,18 +156,14 @@ app.get('/v2.0/Tree/TableEntities/:table_id', (req: any, res: any) => {
   res.json(mockData);
 });
 
-app.get('/v2.0/Tree/AllTableEntities/:table_id', (req: any, res: any) => {
-  const { table_id } = req.params;
-  const { pageSize, sort_by, filter } = req.query;
+app.get('/v2.0/Tree/AllTableEntities/:table_id', ({ params: { table_id }, query: { pageSize, sort_by, filter } }: any, res: any) => {
   console.log(`Mock API: GET /v2.0/Tree/AllTableEntities/${table_id}`, { pageSize, sort_by, filter });
   
   const mockData = generateMockAllTableEntities(table_id, pageSize, sort_by, filter);
   res.json(mockData);
 });
 
-app.get('/v3.0/Tree/:table_id/TableEntities', (req: any, res: any) => {
-  const { table_id } = req.params;
-  const { from, to, sort_by, filter } = req.query;
+app.get('/v3.0/Tree/:table_id/TableEntities', ({ params: { table_id }, query: { from, to, sort_by, filter } }: any, res: any) => {
   console.log(`Mock API: GET /v3.0/Tree/${table_id}/TableEntities`, { from, to, sort_by, filter });
   
   const mockData = generateMockTableEntities(
@@ -182,10 +177,7 @@ app.get('/v3.0/Tree/:table_id/TableEntities', (req: any, res: any) => {
 });
 
 // v3.0 endpoint for TableEntities (POST - new implementation)
-app.post('/v3.0/Tree/:table_id/TableEntities', (req: any, res: any) => {
-  const { table_id } = req.params;
-  const { from, to, sort_by } = req.query;
-  const { filter} = req.body || {};
+app.post('/v3.0/Tree/:table_id/TableEntities', ({ params: { table_id }, query: { from, to, sort_by }, body: { filter } = {} }: any, res: any) => {
   console.log(`Mock API: POST /v3.0/Tree/${table_id}/TableEntities`, { from, to, sort_by, filter});
   
   const mockData = generateMockTableEntities(
@@ -199,8 +191,7 @@ app.post('/v3.0/Tree/:table_id/TableEntities', (req: any, res: any) => {
 });
 
 // Handle tRPC requests with dynamic data generation
-app.post('/trpc/treeEntities.getTreeOfValues', (req: any, res: any) => {
-  const { table_id, field_id } = req.body || {};
+app.post('/trpc/treeEntities.getTreeOfValues', ({ body: { table_id, field_id } = {} }: any, res: any) => {
   console.log(`Mock API: POST /trpc/treeEntities.getTreeOfValues`, { table_id, field_id });
   
   if (!table_id || !field_id) {
@@ -214,8 +205,7 @@ app.post('/trpc/treeEntities.getTreeOfValues', (req: any, res: any) => {
   res.json({ result: { data: mockData } });
 });
 
-app.post('/trpc/treeEntities.getTableEntities', (req: any, res: any) => {
-  const { table_id, from, to, sort_by, filter } = req.body || {};
+app.post('/trpc/treeEntities.getTableEntities', ({ body: { table_id, from, to, sort_by, filter } = {} }: any, res: any) => {
   console.log(`Mock API: POST /trpc/treeEntities.getTableEntities`, { table_id, from, to, sort_by, filter });
   
   if (!table_id) {
@@ -229,8 +219,7 @@ app.post('/trpc/treeEntities.getTableEntities', (req: any, res: any) => {
   res.json({ result: { data: mockData } });
 });
 
-app.post('/trpc/treeEntities.getAllTableEntities', (req: any, res: any) => {
-  const { table_id, pageSize, sort_by, filter } = req.body || {};
+app.post('/trpc/treeEntities.getAllTableEntities', ({ body: { table_id, pageSize, sort_by, filter } = {} }: any, res: any) => {
   console.log(`Mock API: POST /trpc/treeEntities.getAllTableEntities`, { table_id, pageSize, sort_by, filter });
   
   if (!table_id) {
@@ -242,6 +231,48 @@ app.post('/trpc/treeEntities.getAllTableEntities', (req: any, res: any) => {
   
   const mockData = generateMockAllTableEntities(table_id, pageSize, sort_by, filter);
   res.json({ result: { data: mockData } });
+});
+
+// Image service endpoint
+app.post('/api/image', ({ body: { exclusiveId, link } }: any, res: any) => {
+  try {
+    
+    if (!exclusiveId || !link) {
+      return res.status(400).json({
+        success: false,
+        error: 'exclusiveId and link are required',
+        imageUrl: '',
+      });
+    }
+
+    // Simulate some processing time
+    setTimeout(() => {
+      // Generate a deterministic image URL based on entity data
+      const entityId = exclusiveId.tableId || 'unknown';
+      const hash = entityId.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+      const imageIndex = hash % 5;
+      
+      // Add some randomness to make it more realistic
+      const randomSeed = Math.floor(Math.random() * 1000);
+      const imageUrl = `https://picsum.photos/400/300?random=${imageIndex + randomSeed}`;
+      
+      console.log(`Mock API: Image service - Generated image for entity ${entityId} (link: ${link}): ${imageUrl}`);
+      
+      res.json({
+        success: true,
+        imageUrl,
+        error: null,
+      });
+    }, 100 + Math.random() * 200); // Random delay between 100-300ms
+    
+  } catch (error) {
+    console.error('Mock API: Image service error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      imageUrl: '',
+    });
+  }
 });
 
 // Note: All endpoints now use dynamic data generation with filtering support
@@ -273,6 +304,7 @@ app.listen(PORT, () => {
   console.log('  - POST /trpc/treeEntities.getTreeOfValues (tRPC)');
   console.log('  - POST /trpc/treeEntities.getTableEntities (tRPC) - supports filter filtering');
   console.log('  - POST /trpc/treeEntities.getAllTableEntities (tRPC) - supports filter ram filtering');
+  console.log('  - POST /api/image (Image service)');
 
   console.log('  - GET /health');
   console.log('');

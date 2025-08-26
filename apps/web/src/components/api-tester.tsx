@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Button } from '@zohan/ui/button';
 import { Input } from '@zohan/ui/input';
 import { Label } from '@zohan/ui/label';
@@ -40,24 +39,28 @@ export const ApiTester = () => {
   });
 
   // tRPC queries
-  const treeOfValuesQuery = useQuery({
-    ...trpc.treeEntities.getTreeOfValues.queryOptions({ 
+  const treeOfValuesQuery = trpc.treeEntities.getTreeOfValues.useQuery(
+    { 
       table_id: treeParams.table_id, 
       field_id: treeParams.field_id 
-    }),
-    enabled: false
-  });
+    },
+    {
+      enabled: false
+    }
+  );
 
-  const tableEntitiesQuery = useQuery({
-    ...trpc.treeEntities.getTableEntities.queryOptions({
+  const tableEntitiesQuery = trpc.treeEntities.getTableEntities.useQuery(
+    {
       table_id: tableParams.table_id,
       from: parseInt(tableParams.from),
       to: parseInt(tableParams.to),
       sort_by: tableParams.sort_by,
-      filter: tableParams.filter || undefined
-    }),
-    enabled: false
-  });
+      filter: tableParams.filter
+    },
+    {
+      enabled: false
+    }
+  );
 
   const isLoading = treeOfValuesQuery.isFetching || tableEntitiesQuery.isFetching;
 
@@ -275,7 +278,7 @@ export const ApiTester = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="table-filter">New Param</Label>
+                    <Label htmlFor="table-filter"> filter</Label>
                     <Input
                       id="table-filter"
                       value={tableParams.filter}
