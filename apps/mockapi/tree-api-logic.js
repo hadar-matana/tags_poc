@@ -17,24 +17,24 @@ function generateMockTreeOfValues(tableId, fieldId) {
         name: `Root Node - ${tableId}`,
         children: [
           {
-            name: `Category A - ${fieldId}`,
+            name: `Category A - ${tableId}`,
             children: [
               { name: `Subcategory A1 - ${tableId}` },
-              { name: `Subcategory A2 - ${fieldId}` }
+              { name: `Subcategory A2 - ${tableId}` }
             ]
           },
           {
             name: `Category B - ${tableId}`,
             children: [
-              { name: `Subcategory B1 - ${fieldId}` }
+              { name: `Subcategory B1 - ${tableId}` }
             ]
           },
           {
             name: `Category C - ${tableId}`,
             children: [
-              { name: `Subcategory C1 - ${fieldId}` },
+              { name: `Subcategory C1 - ${tableId}` },
               { name: `Subcategory C2 - ${tableId}` },
-              { name: `Subcategory C3 - ${fieldId}` }
+              { name: `Subcategory C3 - ${tableId}` }
             ]
           }
         ]
@@ -47,7 +47,21 @@ function generateMockTableEntities(tableId, from = 1, to = 10, sortBy = 'Creatio
   const entities = [];
   const totalEntities = 150;
   
+  const treeEssences = [
+    `Root Node - ${tableId}`,
+    `Category A - ${tableId}`,
+    `Subcategory A1 - ${tableId}`,
+    `Subcategory A2 - ${tableId}`,
+    `Category B - ${tableId}`,
+    `Subcategory B1 - ${tableId}`,
+    `Category C - ${tableId}`,
+    `Subcategory C1 - ${tableId}`,
+    `Subcategory C2 - ${tableId}`,
+    `Subcategory C3 - ${tableId}`
+  ];
+  
   for (let i = from; i <= Math.min(to, totalEntities); i++) {
+    const essenceIndex = (i - 1) % treeEssences.length;
     entities.push({
       exclusiveId: `exclusive-${tableId}-${i}`,
       tableId: tableId,
@@ -84,6 +98,7 @@ function generateMockTableEntities(tableId, from = 1, to = 10, sortBy = 'Creatio
       date: `2024-01-${String(i).padStart(2, '0')}T10:30:00Z`,
       properties: {
         name: `Entity ${i} from Table ${tableId}`,
+        essence: treeEssences[essenceIndex],
         description: `This is entity ${i} from table ${tableId}`,
         status: i % 2 === 0 ? 'active' : 'inactive',
         category: `category-${i % 3}`,

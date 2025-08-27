@@ -278,12 +278,12 @@ export const ApiTester = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="table-filter"> filter</Label>
+                    <Label htmlFor="table-filter">Essence Filter</Label>
                     <Input
                       id="table-filter"
                       value={tableParams.filter}
                       onChange={(e) => setTableParams(prev => ({ ...prev, filter: e.target.value }))}
-                      placeholder="Enter new parameter value..."
+                      placeholder="Enter essence value to filter by..."
                       className="mt-1"
                     />
                   </div>

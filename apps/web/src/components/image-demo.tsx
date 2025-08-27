@@ -90,13 +90,13 @@ export const ImageDemo = () => {
               />
             </div>
             <div>
-              <Label htmlFor="filter">Filter (JSON)</Label>
+              <Label htmlFor="filter">Essence Filter</Label>
               <Input
                 id="filter"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder='{"key": "value"}'
+                placeholder='Enter essence value (e.g., "Category A - sample_table")'
               />
             </div>
           </div>
