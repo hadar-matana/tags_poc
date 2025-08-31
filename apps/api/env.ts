@@ -10,6 +10,9 @@ const envSchema = z.object({
   TREE_ENTITIES_DEFAULT_SORT_BY: z.string(),
   USE_TRPC_IMAGE_URLS: z.string().optional(),
   IMAGE_SERVICE_BASE_URL: z.string(),
+  COORD_CONV_GROUND_2_IMAGE_PATH: z.string(),
+  COORD_CONV_LON_NAME: z.string(),
+  COORD_CONV_LAT_NAME: z.string()
 });
 
 const env = envSchema.parse(process.env);

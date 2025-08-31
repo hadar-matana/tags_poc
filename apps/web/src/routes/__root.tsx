@@ -18,7 +18,7 @@ function RootComponent() {
   return (
     <>
       <AppHeader />
-      <div>
+      <div className='h-[calc(100vh-4rem)]'>
         <Outlet />
       </div>
       <Toaster />

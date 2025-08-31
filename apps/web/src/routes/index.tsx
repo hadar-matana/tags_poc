@@ -1,31 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { ApiTester } from '@/components/api-tester';
-import { ImageDemo } from '@/components/image-demo';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@zohan/ui/tabs';
-import { ImageIcon, TestTube } from 'lucide-react';
+import { EssencesList } from '@/components/essences-list';
+import { TreeOfValuesContextProvider } from '@/store/tree-of-values-context';
+import { EntitiesGrid } from '@/components/entities-grid';
 
 function HomePage() {
   return (
-    <div className="container mx-auto p-6">
-      <Tabs defaultValue="api-tester" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="api-tester" className="flex items-center gap-2">
-            <TestTube className="h-4 w-4" />
-            API Tester
-          </TabsTrigger>
-          <TabsTrigger value="image-demo" className="flex items-center gap-2">
-            <ImageIcon className="h-4 w-4" />
-            Image Service Demo
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="api-tester">
-          <ApiTester />
-        </TabsContent>
-        <TabsContent value="image-demo">
-          <ImageDemo />
-        </TabsContent>
-      </Tabs>
-    </div>
+    <TreeOfValuesContextProvider>
+      <div className="flex w-full h-full gap-4 p-4">
+        <EssencesList />
+        <EntitiesGrid />
+      </div>
+    </TreeOfValuesContextProvider>
   );
 }
 
