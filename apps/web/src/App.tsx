@@ -3,7 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { router } from './router';
 import '@zohan/ui/globals.css';
 import './styles.css';
-import { queryClient, trpc, trpcClient } from './trpc/client';
+import { queryClient } from './trpc/client';
 
 import { setDefaultOptions } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -14,10 +14,8 @@ setDefaultOptions({
 
 export const App = () => {
   return (
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </trpc.Provider>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   );
 };

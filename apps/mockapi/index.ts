@@ -168,13 +168,13 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
     
     entities.push({
       exclusiveId: {
-        dataStore: `datastore-${tableId}`,
+        dataStore: `datastore-${tableId}${i}`,
         tableId: tableId
       },
       link: `https://mock-link.com/${tableId}/entity/${i}`,
       geo: {
         wkt: `POINT(34.${7800 + i} 32.${800 + i})`,
-        geoJson: {
+        geo_json: {
           type: "Point",
           coordinates: `34.${7800 + i},32.${800 + i}`,
           geometries: []
@@ -193,6 +193,7 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
         status: i % 2 === 0 ? 'active' : 'inactive',
         category: `category-${i % 3}`,
         sortBy: sortBy,
+        imageId: "trump_gaza_001",
         originalImg: `https://picsum.photos/400/300?random=${tableId}-${i}`
       }
     });
@@ -230,7 +231,7 @@ function generateMockAllTableEntities(tableId: string, _pageSize: number = 100, 
       link: `https://mock-link.com/${tableId}/entity/${i}`,
       geo: {
         wkt: `POINT(34.${7800 + i} 32.${800 + i})`,
-        geoJson: {
+        geo_json: {
           type: "Point",
           coordinates: `34.${7800 + i},32.${800 + i}`,
           geometries: []
@@ -249,6 +250,7 @@ function generateMockAllTableEntities(tableId: string, _pageSize: number = 100, 
         status: i % 2 === 0 ? 'active' : 'inactive',
         category: `category-${i % 3}`,
         sortBy: sortBy,
+        imageId: "trump_gaza_002",
         originalImg: `https://picsum.photos/400/300?random=${tableId}-${i}`
       }
     });
@@ -345,6 +347,11 @@ app.post('/trpc/treeEntities.getAllTableEntities', ({ body: { table_id, pageSize
   
   const mockData = generateMockAllTableEntities(table_id, parseInt(pageSize) || 100, sort_by, filter);
   res.json({ result: { data: mockData } });
+});
+
+app.get(`/coordConverter/ground2Image`, (req: any, res: any) => {
+  const { lon, lat } = req.query;
+  res.json({ imageX: lon, imageY: lat });
 });
 
 // Image service endpoint

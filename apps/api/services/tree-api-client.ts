@@ -64,9 +64,8 @@ export class TreeApiClient {
     return { ...response, entities_list: entities };
   }
 
-  async getAllTableEntities({ table_id, pageSize = 100, sort_by, filter }: GetAllTableEntitiesInput): Promise<TableEntity[]> {
+  async getAllTableEntities({ table_id, pageSize = 100, sort_by, filter, from }: GetAllTableEntitiesInput): Promise<TableEntity[]> {
     let allEntities: TableEntity[] = [];
-    let from = 1;
     let hasMore = true;
 
     while (hasMore) {
