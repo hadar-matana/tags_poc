@@ -3,15 +3,15 @@ import { type ReactNode } from 'react';
 
 export const TreeOfValuesContext = createContext({
     selectedEssence: '',
-    setSelectedEssence: (selectedEssence: string) => {}
+    setSelectedEssence: (_selectedEssence: string) => {}
 });
 
 export const TreeOfValuesContextProvider = ({ children }: { children: ReactNode }) => {
     const [selectedEssence, setSelectedEssence] = useState('');
       const ctxValue = {
         selectedEssence: selectedEssence,
-        setSelectedEssence: (selectedEssence: string) => {
-          setSelectedEssence(prevSelectedEssence => prevSelectedEssence === selectedEssence ? '' : selectedEssence);
+        setSelectedEssence: (newSelectedEssence: string) => {
+          setSelectedEssence(prevSelectedEssence => prevSelectedEssence === newSelectedEssence ? '' : newSelectedEssence);
         }
       }
 

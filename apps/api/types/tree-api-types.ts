@@ -24,7 +24,7 @@ export interface TreeOfValuesResponse {
 
 export interface Geo {
   wkt: string;
-  geoJson: GeoJsonObject;
+  geo_json: GeoJsonObject;
 }
 
 export interface Classification {
