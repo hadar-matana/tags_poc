@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
 import { TreeOfValuesContext } from "@/store/tree-of-values-context";
 import type { TreeOfValuesNode } from "@zohan/api/types/tree-api-types";
+import { EssencesListSkeleton } from "./essences-list-skeleton";
 
 export const EssencesList = () => {
   const { selectedEssence, setSelectedEssence } = useContext(TreeOfValuesContext);
@@ -29,6 +30,10 @@ export const EssencesList = () => {
   }
   
   let essences: string[] = treeOfValuesQuery.data?.treeOfValues[0] ? flattenTree(treeOfValuesQuery.data?.treeOfValues[0]) : []; 
+  
+  if (treeOfValuesQuery.isLoading || treeOfValuesQuery.isFetching) {
+    return <EssencesListSkeleton />;
+  }
   
   return (
     <div className="w-[30%] p-4 bg-white border rounded-lg flex flex-col gap-2 h-full">

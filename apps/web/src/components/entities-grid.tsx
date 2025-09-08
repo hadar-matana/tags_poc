@@ -9,6 +9,7 @@ import { useContext } from "react";
 import { center } from "@turf/turf";
 import { toast } from "sonner";
 import type { Polygon } from "geojson";
+import { EntitiesGridSkeleton } from "./entities-grid-skeleton";
 
 interface ViewedTableEntity {
   key: string;
@@ -21,17 +22,17 @@ interface ViewedTableEntity {
 export const EntitiesGrid = () => {
     const { selectedEssence } = useContext(TreeOfValuesContext);
     
-    const entitiesGridQuery = useQuery(
-      trpc.treeEntities.getAllTableEntities.queryOptions({
+    const entitiesGridQuery = useQuery({
+      ...trpc.treeEntities.getAllTableEntities.queryOptions({
         table_id: "users",
         filter: selectedEssence
       })
-    );
+    });
 
     const mutation = useMutation(trpc.coordConverter.ground2Image.mutationOptions({}));
 
     const getPropDisplayFields = (ent: TableEntity) => {
-      return config.propertiesSelectedFields.reduce((acc, field) => {
+      return config.propertiesSelectedFields.reduce((acc: Record<string, any>, field: string) => {
         return {...acc, [field]: ent.properties[field]}
       }, {});
     }
@@ -54,6 +55,10 @@ export const EntitiesGrid = () => {
       toast.success("Image link copied to clipboard!");
     }
    
+    if (entitiesGridQuery.isLoading || entitiesGridQuery.isFetching) {
+      return <EntitiesGridSkeleton />;
+    }
+
     return (
       <div className="w-full h-full p-4">
         <div
@@ -68,7 +73,7 @@ export const EntitiesGrid = () => {
               <div className="bg-purple-200 border-t border-purple-300 rounded-b-lg px-2 py-2 flex flex-col items-end">
                 <span className="font-bold text-black w-full text-md leading-tight">{entity.name}</span>
                 <TooltipProvider>
-                  {config.propertiesSelectedFields.map(field => (
+                  {config.propertiesSelectedFields.map((field: string) => (
                     <Tooltip key={field}>
                       <TooltipTrigger asChild>
                         <span
