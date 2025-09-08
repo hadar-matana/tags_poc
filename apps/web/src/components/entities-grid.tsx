@@ -26,7 +26,8 @@ export const EntitiesGrid = () => {
       ...trpc.treeEntities.getAllTableEntities.queryOptions({
         table_id: "users",
         filter: selectedEssence
-      })
+      }),
+      enabled: !!selectedEssence
     });
 
     const mutation = useMutation(trpc.coordConverter.ground2Image.mutationOptions({}));
