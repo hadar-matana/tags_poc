@@ -60,6 +60,21 @@ export const EntitiesGrid = () => {
       }
     }
    
+    if (!selectedEssence) {
+      return (
+        <div className="w-full h-full flex items-center justify-center p-4">
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-gray-600 mb-2">
+              Please choose essence
+            </div>
+            <div className="text-sm text-gray-500">
+              Select an essence from the list to view entities
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     if (entitiesGridQuery.isLoading || entitiesGridQuery.isFetching) {
       return <EntitiesGridSkeleton />;
     }
