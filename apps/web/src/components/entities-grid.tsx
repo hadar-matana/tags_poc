@@ -48,11 +48,16 @@ export const EntitiesGrid = () => {
     });
 
     const onCardClicked = async (entity: ViewedTableEntity) => {
-      const centerPoint = center(entity.polygon).geometry.coordinates;
-      const convertedPoint = await mutation.mutateAsync({imageId: entity.imageId, lon: centerPoint[0], lat: centerPoint[1]});
-      const destLink = `${config.destLinkPrefix}${entity[config.imageFieldName]}&${config.destLinkXName}=${convertedPoint.imageX}&${config.destLinkYName}=${convertedPoint.imageY}`;
-      await navigator.clipboard.writeText(destLink);
-      toast.success("Image link copied to clipboard!");
+      try {
+        const centerPoint = center(entity.polygon).geometry.coordinates;
+        const convertedPoint = await mutation.mutateAsync({imageId: entity.imageId, lon: centerPoint[0], lat: centerPoint[1]});
+        const destLink = `${config.destLinkPrefix}${entity[config.imageFieldName]}&${config.destLinkXName}=${convertedPoint.imageX}&${config.destLinkYName}=${convertedPoint.imageY}`;
+        await navigator.clipboard.writeText(destLink);
+        toast.success("Image link copied to clipboard!");
+      } catch (error) {
+        console.error("Failed to copy link to clipboard:", error);
+        toast.error("Failed to copy link to clipboard. Please try again.");
+      }
     }
    
     if (entitiesGridQuery.isLoading || entitiesGridQuery.isFetching) {
