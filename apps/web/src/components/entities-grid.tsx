@@ -41,7 +41,7 @@ export const EntitiesGrid = () => {
     const entities: Array<ViewedTableEntity> | undefined = entitiesGridQuery?.data?.map((ent) => {
       return {
         key: ent.exclusiveId.dataStore,
-        name: ent.properties["name"],
+        name: ent.properties[config.entityNameProperty],
         imageId: ent.properties[config.imageFieldName],
         polygon: ent.geo.geo_json,
         ...getPropDisplayFields(ent),
@@ -92,7 +92,9 @@ export const EntitiesGrid = () => {
             >
               <div className="min-w-[180px] h-[180px]"></div>
               <div className="bg-purple-200 border-t border-purple-300 rounded-b-lg px-2 py-2 flex flex-col items-end">
-                <span className="font-bold text-black w-full text-md leading-tight">{entity.name}</span>
+                <span className="font-bold text-black w-full text-md leading-tight" style={{ fontWeight: 'bold' }}>
+                  {String(entity[config.entityHeaderProperty] || "")}
+                </span>
                 <TooltipProvider>
                   {config.propertiesSelectedFields.map((field: string) => (
                     <Tooltip key={field}>
