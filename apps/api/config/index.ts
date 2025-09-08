@@ -6,6 +6,7 @@ export interface TreeApiConfig {
   defaultPageSize: number;
   defaultSortBy: string;
   useTrpcImageUrls: boolean;
+  requiredProperties: string[];
 }
 
 export interface ImageServiceConfig {
@@ -31,6 +32,7 @@ export const treeEntitiesConfig: TreeApiConfig = {
   defaultPageSize: parseInt(env.TREE_ENTITIES_DEFAULT_PAGE_SIZE!, 10),
   defaultSortBy: env.TREE_ENTITIES_DEFAULT_SORT_BY!,
   useTrpcImageUrls: env.USE_TRPC_IMAGE_URLS === 'true',
+  requiredProperties: env.REQUIRED_PROPERTIES!,
 };
 
 export const imageServiceConfig: ImageServiceConfig = {
