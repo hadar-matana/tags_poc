@@ -33,7 +33,6 @@ export const treeEntitiesRouter = router({
   getAllTableEntities: publicProcedure
     .input(getAllTableEntitiesSchema)
     .query(async ({ input }): Promise<TableEntity[]> => {
-      // Add 5-second delay
       await new Promise(resolve => setTimeout(resolve, 2000));
       return treeApiClient.getAllTableEntities(input);
     }),
