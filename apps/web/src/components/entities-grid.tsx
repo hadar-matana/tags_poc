@@ -99,14 +99,18 @@ export const EntitiesGrid = () => {
                   {config.propertiesSelectedFields.map((field: string) => (
                     <Tooltip key={field}>
                       <TooltipTrigger asChild>
-                        <span
-                          className="text-xs text-black w-full block text-right overflow-hidden line-clamp-2"
-                        >
-                          {typeof entity[field] === "string" ? entity[field] : ""}
-                        </span>
+                        <div className="text-xs text-black w-full block text-right">
+                          <span className="font-semibold">{config.propertyLabels[field]}:</span>
+                          <span className="ml-1 overflow-hidden line-clamp-2">
+                            {typeof entity[field] === "string" ? entity[field] : ""}
+                          </span>
+                        </div>
                       </TooltipTrigger>
                       <TooltipContent className="bg-black text-white">
-                        {typeof entity[field] === "string" ? entity[field] : ""}
+                        <div>
+                          <div className="font-semibold">{config.propertyLabels[field]}:</div>
+                          <div>{typeof entity[field] === "string" ? entity[field] : ""}</div>
+                        </div>
                       </TooltipContent>
                     </Tooltip>
                   ))}
