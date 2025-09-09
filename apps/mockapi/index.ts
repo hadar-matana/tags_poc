@@ -190,7 +190,7 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
         category: `category-${i % 3}`,
         sortBy: sortBy,
         imageId: "trump_gaza_001",
-        originalImg: `https://picsum.photos/400/300?random=${tableId}-${i}`
+        thumbnail: `https://picsum.photos/${300 + (i % 5) * 100}/${200 + (i % 4) * 50}?random=${tableId}-${i}`
       }
     });
   }
@@ -247,7 +247,7 @@ function generateMockAllTableEntities(tableId: string, _pageSize: number = 100, 
         category: `category-${i % 3}`,
         sortBy: sortBy,
         imageId: "trump_gaza_002",
-        originalImg: `https://picsum.photos/400/300?random=${tableId}-${i}`
+        thumbnail: `https://picsum.photos/${300 + (i % 5) * 100}/${200 + (i % 4) * 50}?random=${tableId}-${i}`
       }
     });
   }
@@ -358,7 +358,7 @@ app.post('/api/image', ({ body: { exclusiveId, link } }: any, res: any) => {
       return res.status(400).json({
         success: false,
         error: 'exclusiveId and link are required',
-        imageUrl: '',
+        thumbnail: '',
       });
     }
 
@@ -369,13 +369,17 @@ app.post('/api/image', ({ body: { exclusiveId, link } }: any, res: any) => {
       const hash = entityId.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
       const imageIndex = hash % 5;
       
+      // Generate different sizes based on the hash
+      const width = 300 + (hash % 5) * 100; // 300, 400, 500, 600, 700
+      const height = 200 + (hash % 4) * 50; // 200, 250, 300, 350
+      
       // Add some randomness to make it more realistic
       const randomSeed = Math.floor(Math.random() * 1000);
-      const imageUrl = `https://picsum.photos/400/300?random=${imageIndex + randomSeed}`;
+      const imageUrl = `https://picsum.photos/${width}/${height}?random=${imageIndex + randomSeed}`;
       
       res.json({
         success: true,
-        imageUrl,
+        thumbnail: imageUrl,
         error: null,
       });
     }, 100 + Math.random() * 200); // Random delay between 100-300ms
@@ -384,7 +388,7 @@ app.post('/api/image', ({ body: { exclusiveId, link } }: any, res: any) => {
     res.status(500).json({
       success: false,
       error: 'Internal server error',
-      imageUrl: '',
+      thumbnail: '',
     });
   }
 });

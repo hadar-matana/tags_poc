@@ -96,7 +96,7 @@ app.post('/api/image', (req, res) => {
     return res.status(400).json({
       success: false,
       error: 'exclusiveId is required',
-      imageUrl: '',
+      thumbnail: '',
     });
   }
 
@@ -112,7 +112,7 @@ app.post('/api/image', (req, res) => {
       
       res.json({
         success: true,
-        imageUrl,
+        thumbnail: imageUrl,
         error: null,
       });
     } catch (error) {
@@ -120,7 +120,7 @@ app.post('/api/image', (req, res) => {
       res.status(500).json({
         success: false,
         error: 'Internal server error',
-        imageUrl: '',
+        thumbnail: '',
       });
     }
   }, processingDelay);

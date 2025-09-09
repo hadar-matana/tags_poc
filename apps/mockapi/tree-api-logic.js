@@ -106,7 +106,7 @@ function generateMockTableEntities(tableId, from = 1, to = 10, sortBy = 'Creatio
         additionalProp1: `prop1-${tableId}-${i}`,
         additionalProp2: `prop2-${tableId}-${i}`,
         additionalProp3: `prop3-${tableId}-${i}`,
-        originalImg: `https://picsum.photos/400/300?random=${tableId}-${i}`
+        thumbnail: `https://picsum.photos/${300 + (i % 5) * 100}/${200 + (i % 4) * 50}?random=${tableId}-${i}`
       }
     });
   }
