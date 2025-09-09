@@ -5,6 +5,7 @@ import type { GeoJsonObject } from "geojson";
 export interface ExclusiveId {
   dataStore: string;
   tableId: string;
+  entity_id: string;
 }
 
 export interface TreeOfValuesNode {
@@ -17,7 +18,7 @@ export interface TreeOfValuesResponse {
   type: string;
   name: string;
   displayName: string;
-  treeOfValues: TreeOfValuesNode[];
+  tree_of_values: TreeOfValuesNode[];
 }
 
  //Table Entities API Types
@@ -38,12 +39,12 @@ export interface EntityProperties {
 }
 
 export interface TableEntity {
-  exclusiveId: ExclusiveId;
+  exclusive_id: ExclusiveId;
   link: string;
   geo: Geo;
   classification: Classification;
   date: string;
-  properties: EntityProperties;
+  properties_list: EntityProperties;
 }
 
 export interface TableEntitiesResponse {
@@ -65,7 +66,6 @@ export interface TableEntitiesParams {
   filter: string;
 }
 
-
 export interface TableEntitiesRequestBody {
-  filter: string;
+  filter: any;
 }

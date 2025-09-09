@@ -24,7 +24,7 @@ export const EntitiesGrid = () => {
     
     const entitiesGridQuery = useQuery({
       ...trpc.treeEntities.getAllTableEntities.queryOptions({
-        table_id: "users",
+        table_id: config.treeTableId,
         filter: selectedEssence
       }),
       enabled: !!selectedEssence
@@ -34,16 +34,17 @@ export const EntitiesGrid = () => {
 
     const getPropDisplayFields = (ent: TableEntity) => {
       return config.propertiesSelectedFields.reduce((acc: Record<string, any>, field: string) => {
-        return {...acc, [field]: ent.properties[field]}
+        return {...acc, [field]: ent.properties_list[field]}
       }, {});
     }
 
     const entities: Array<ViewedTableEntity> | undefined = entitiesGridQuery?.data?.map((ent) => {
       return {
-        key: ent.exclusiveId.dataStore,
-        name: ent.properties[config.entityNameProperty],
-        imageId: ent.properties[config.imageFieldName],
-        polygon: ent.geo.geo_json,
+        key: ent.exclusive_id.entity_id,
+        name: ent.properties_list[config.entityNameProperty],
+        imageId: ent.properties_list[config.imageFieldName],
+        thumbnail: ent.properties_list.thumbnail,
+        polygon: ent.geo?.geo_json,
         ...getPropDisplayFields(ent),
       }
     });
@@ -52,7 +53,7 @@ export const EntitiesGrid = () => {
       try {
         const centerPoint = center(entity.polygon).geometry.coordinates;
         const convertedPoint = await mutation.mutateAsync({imageId: entity.imageId, lon: centerPoint[0], lat: centerPoint[1]});
-        const destLink = `${config.destLinkPrefix}${entity[config.imageFieldName]}&${config.destLinkXName}=${convertedPoint.imageX}&${config.destLinkYName}=${convertedPoint.imageY}`;
+        const destLink = `${config.destLinkPrefix}${entity[config.imageFieldName]}&${config.destLinkXName}=${convertedPoint.coordinates[0][0]}&${config.destLinkYName}=${convertedPoint.coordinates[0][1]}`;
         await navigator.clipboard.writeText(destLink);
         toast.success("Image link copied to clipboard!");
       } catch (error) {
@@ -90,7 +91,9 @@ export const EntitiesGrid = () => {
               key={ entity.key }
               className="min-w-[180px] bg-purple-100 border border-purple-300 rounded-lg flex flex-col justify-end shadow-none cursor-pointer"
             >
-              <div className="min-w-[180px] h-[180px]"></div>
+              <div className="min-w-[180px] h-[180px]">
+                <img src={String(entity?.thumbnail)} alt='image not found'/>
+              </div>
               <div className="bg-purple-200 border-t border-purple-300 rounded-b-lg px-2 py-2 flex flex-col items-end">
                 <div className="text-xs text-black w-full block text-right">
                   <span className="font-bold">{config.propertyLabels[config.entityHeaderProperty]}:</span>

@@ -14,7 +14,7 @@ export const EntityImage = ({ entity, className }: EntityImageProps) => {
   const [imageError, setImageError] = useState(false);
 
   // Create the image endpoint URL directly
-  const imageUrl = `http://localhost:3000/api/image/${entity.exclusiveId.tableId}/${entity.exclusiveId.dataStore}`;
+  const imageUrl = `http://localhost:3000/api/image/${entity.exclusive_id.tableId}/${entity.exclusive_id.dataStore}`;
 
   const handleImageLoad = () => {
     setImageLoaded(true);
@@ -53,7 +53,7 @@ export const EntityImage = ({ entity, className }: EntityImageProps) => {
           )}
           <img
             src={imageUrl}
-            alt={`Image for entity ${entity.exclusiveId.tableId}`}
+            alt={`Image for entity ${entity.exclusive_id.tableId}`}
             className={`h-48 w-full rounded-md object-cover ${
               imageLoaded ? 'block' : 'hidden'
             }`}
@@ -73,7 +73,7 @@ export const EntityImage = ({ entity, className }: EntityImageProps) => {
           )}
         </div>
         <div className="mt-2 text-xs text-gray-500">
-          Entity ID: {entity.exclusiveId.tableId}
+          Entity ID: {entity.exclusive_id.tableId}
         </div>
       </CardContent>
     </Card>

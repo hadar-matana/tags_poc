@@ -2,11 +2,14 @@ import env from '../env';
 
 export interface TreeApiConfig {
   baseUrl: string;
+  treeSchemaName: string;
   timeout: number;
   defaultPageSize: number;
   defaultSortBy: string;
+  reqTableEntitiesFilterTemplate: string;
   useTrpcImageUrls: boolean;
   requiredProperties: string[];
+  customHeaders: Record<string, string> | undefined
 }
 
 export interface ImageServiceConfig {
@@ -28,11 +31,14 @@ export interface ApiConfig {
 
 export const treeEntitiesConfig: TreeApiConfig = {
   baseUrl: env.TREE_ENTITIES_API_BASE_URL!,
+  treeSchemaName: env.TREE_SCHEMA_NAME,
   timeout: parseInt(env.TREE_ENTITIES_API_TIMEOUT!, 10),
   defaultPageSize: parseInt(env.TREE_ENTITIES_DEFAULT_PAGE_SIZE!, 10),
   defaultSortBy: env.TREE_ENTITIES_DEFAULT_SORT_BY!,
+  reqTableEntitiesFilterTemplate: env.TREE_TABLE_ENTITIES_REQ_FILTER_TEMPLATE,
   useTrpcImageUrls: env.USE_TRPC_IMAGE_URLS === 'true',
   requiredProperties: env.REQUIRED_PROPERTIES!,
+  customHeaders: env.TREE_CUSTOM_HEADERS
 };
 
 export const imageServiceConfig: ImageServiceConfig = {
@@ -55,13 +61,13 @@ export const apiConfig: ApiConfig = {
 // TREE API Endpoints
 export const treeEntitiesEndpoints = {
   treeOfValues: (tableId: string, fieldId: string) => 
-    `/v2.0/Tree/TreeOfValues/${tableId}/${fieldId}`,
+    `/v2.0/${treeEntitiesConfig.treeSchemaName}/TreeOfValues/${tableId}/${fieldId}`,
   
   tableEntities: (tableId: string, from: number, to: number, sortBy: string) => 
-    `/v3.0/Tree/${tableId}/TableEntities?from=${from}&to=${to}&sort_by=${sortBy}`,
+    `/v3.0/${treeEntitiesConfig.treeSchemaName}/${tableId}/TableEntities?from=${from}&to=${to}&sort_by=${sortBy}`,
 } as const;
 
 export const coordConverterEndpoints = {
   ground2Image: (imageId: string, lon: number, lat: number) => 
-    `/${coordConverterConfig.ground2ImagePath}${imageId}&${coordConverterConfig.lonParamName}=${lon}&${coordConverterConfig.latParamName}=${lat}`
+    `${coordConverterConfig.ground2ImagePath}${imageId}&${coordConverterConfig.lonParamName}=${lon}&${coordConverterConfig.latParamName}=${lat}`
 };

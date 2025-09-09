@@ -1,3 +1,4 @@
+import type { MultiPoint } from "geojson";
 import { coordConverterEndpoints, treeEntitiesConfig } from "../config/index";
 import { HttpClient } from "./http-client";
 
@@ -10,10 +11,9 @@ export class CoordConverterClient {
     this.httpClient = new HttpClient(this.baseUrl);
   }
 
-  async ground2Image(params: {imageId: string, lon: number, lat: number}): Promise<{ imageX: number, imageY: number }> {
+  async ground2Image(params: {imageId: string, lon: number, lat: number}): Promise<MultiPoint> {
     const { imageId, lon, lat } = params;
     const endpointPath = coordConverterEndpoints.ground2Image(imageId, lon, lat);
-    const url = `${this.baseUrl}${endpointPath}`;
-    return this.httpClient.get(url);
+    return this.httpClient.get(endpointPath);
   }
 }
