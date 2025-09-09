@@ -95,19 +95,29 @@ export const EntitiesGrid = () => {
                 <img src={String(entity?.thumbnail)} alt='image not found'/>
               </div>
               <div className="bg-purple-200 border-t border-purple-300 rounded-b-lg px-2 py-2 flex flex-col items-end">
-                <div className="text-xs text-black w-full block text-right">
-                  <span className="font-bold">{config.propertyLabels[config.entityHeaderProperty]}:</span>
-                  <span className="font-bold ml-1 overflow-hidden line-clamp-2">
-                    {String(entity[config.entityHeaderProperty]) || ""}
-                  </span>
-                </div>
                 <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="text-xs text-black w-full block flex text-right">
+                        <span className="font-bold ml-1">{config.propertyLabels[config.entityHeaderProperty]}:</span>
+                        <span className="font-bold ml-1 overflow-hidden line-clamp-2 whitespace-nowrap overflow-hidden text-ellipsis">
+                          {String(entity[config.entityHeaderProperty]) || ""}
+                        </span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-black text-white">
+                      <div>
+                        <div className="font-semibold">{config.propertyLabels[config.entityHeaderProperty]}:</div>
+                        <div>{String(entity[config.entityHeaderProperty]) || ""}</div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
                   {config.propertiesSelectedFields.map((field: string) => (
                     <Tooltip key={field}>
                       <TooltipTrigger asChild>
-                        <div className="text-xs text-black w-full block text-right">
-                          <span>{config.propertyLabels[field]}:</span>
-                          <span className="ml-1 overflow-hidden line-clamp-2">
+                        <div className="text-xs text-black w-full flex block text-right">
+                          <span className="ml-1">{config.propertyLabels[field]}:</span>
+                          <span className="ml-1 overflow-hidden line-clamp-2 whitespace-nowrap overflow-hidden text-ellipsis">
                             {typeof entity[field] === "string" ? entity[field] : ""}
                           </span>
                         </div>
