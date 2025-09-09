@@ -34,18 +34,10 @@ export const treeEntitiesRouter = router({
   getAllTableEntities: publicProcedure
     .input(getAllTableEntitiesSchema)
     .query(async ({ input }): Promise<TableEntity[]> => {
-      await new Promise(resolve => setTimeout(resolve, 2000));
       const entities = await treeApiClient.getAllTableEntities(input);
       // Filter entities that have all required properties (only if requiredProperties is defined and not empty)
-      const filteredEntities = treeEntitiesConfig.requiredProperties && treeEntitiesConfig.requiredProperties.length > 0
-        ? entities.filter(entity => {
-            const hasAllRequiredProperties = treeEntitiesConfig.requiredProperties.every(
-              propertyName => entity.properties && entity.properties[propertyName] !== undefined && entity.properties[propertyName] !== null
-            );
-            return hasAllRequiredProperties;
-          })
-        : entities;      
-      return filteredEntities;
+      return entities.filter(ent => 
+        treeEntitiesConfig.requiredProperties.every(propName => Boolean(ent.properties[propName])));      
     }),
 
   getImageUrl: publicProcedure

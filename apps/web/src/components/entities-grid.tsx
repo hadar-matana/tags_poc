@@ -92,15 +92,18 @@ export const EntitiesGrid = () => {
             >
               <div className="min-w-[180px] h-[180px]"></div>
               <div className="bg-purple-200 border-t border-purple-300 rounded-b-lg px-2 py-2 flex flex-col items-end">
-                <span className="font-bold text-black w-full text-md leading-tight" style={{ fontWeight: 'bold' }}>
-                  {String(entity[config.entityHeaderProperty] || "")}
-                </span>
+                <div className="text-xs text-black w-full block text-right">
+                  <span className="font-bold">{config.propertyLabels[config.entityHeaderProperty]}:</span>
+                  <span className="font-bold ml-1 overflow-hidden line-clamp-2">
+                    {String(entity[config.entityHeaderProperty]) || ""}
+                  </span>
+                </div>
                 <TooltipProvider>
                   {config.propertiesSelectedFields.map((field: string) => (
                     <Tooltip key={field}>
                       <TooltipTrigger asChild>
                         <div className="text-xs text-black w-full block text-right">
-                          <span className="font-semibold">{config.propertyLabels[field]}:</span>
+                          <span>{config.propertyLabels[field]}:</span>
                           <span className="ml-1 overflow-hidden line-clamp-2">
                             {typeof entity[field] === "string" ? entity[field] : ""}
                           </span>
