@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-
-
 export const getTreeOfValuesSchema = z.object({
   table_id: z.string().min(1, 'Table ID is required'),
   field_id: z.string().min(1, 'Field ID is required'),
@@ -23,14 +21,6 @@ export const getTableEntitiesSchema = z.object({
   filter: z.string(),
 });
 
-export const getImageUrlSchema = z.object({
-  exclusiveId: z.object({
-    dataStore: z.string(),
-    tableId: z.string(),
-  }),
-});
-
-export type GetImageUrlInput = z.infer<typeof getImageUrlSchema>;
 export type GetTreeOfValuesInput = z.infer<typeof getTreeOfValuesSchema>;
 export type GetAllTableEntitiesInput = z.infer<typeof getAllTableEntitiesSchema>;
 export type GetTableEntitiesInput = z.infer<typeof getTableEntitiesSchema>;

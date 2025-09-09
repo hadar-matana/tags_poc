@@ -18,20 +18,4 @@ export class ImageApiClient {
     }
     return ImageApiClient.instance;
   }
-
-  async getImageUrl(exclusiveId: ExclusiveId): Promise<ImageServiceResponse> {
-    try {
-      const response = await this.httpClient.post<ImageServiceResponse>('/api/image', {
-        exclusiveId,
-      });
-      
-      return response;
-    } catch (error) {
-      return {
-        imageUrl: '',
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-      };
-    }
-  }
 }
