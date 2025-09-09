@@ -134,23 +134,18 @@ function generateMockTreeOfValues(tableId: string, fieldId: string) {
     type: `tree-type-${tableId}`,
     name: `Tree of Values for Table ${tableId}`,
     displayName: `Tree Display for ${tableId} - ${fieldId}`,
-    treeOfValues: [
-      {
-        name: `Root Node - ${tableId}`,
-        children: [
-          ...Array.from({ length: 10 }, (_, i) => {
-            const idx = i + 1;
-            return {
-              name: `Category ${String.fromCharCode(64 + idx)} - ${tableId}`,
-              children: [
-                ...Array.from({length: 10}, (_ ,j) => {
-                  return { name: `Subcategory ${String.fromCharCode(64 + idx)}.${j + 1} - ${tableId}` };
-                }),
-              ]
-            };
-          })
-        ]
-      }
+    tree_of_values: [
+      ...Array.from({ length: 10 }, (_, i) => {
+        const idx = i + 1;
+        return {
+          name: `Category ${String.fromCharCode(64 + idx)} - ${tableId}`,
+          children: [
+            ...Array.from({length: 10}, (_ ,j) => {
+              return { name: `Subcategory ${String.fromCharCode(64 + idx)}.${j + 1} - ${tableId}` };
+            }),
+          ]
+        };
+      })
     ]
   };
 }
@@ -167,9 +162,10 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
     const essenceIndex = (i - 1) % treeEssences.length;
     
     entities.push({
-      exclusiveId: {
+      exclusive_id: {
         dataStore: `datastore-${tableId}${i}`,
-        tableId: tableId
+        tableId: tableId,
+        entity_id: `entity-id-${tableId}${i}`
       },
       link: `https://mock-link.com/${tableId}/entity/${i}`,
       geo: {
@@ -186,7 +182,7 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
         publish_procedure: `procedure-${tableId}-${i}`
       },
       date: `2024-01-${String(i).padStart(2, '0')}T10:30:00Z`,
-      properties: {
+      properties_list: {
         name: entityName,
         essence: treeEssences[essenceIndex],
         description: `This is entity ${i} from table ${tableId}`,
@@ -202,7 +198,7 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
   // Apply filter if specified
   const filteredEntities = filter && filter !== '{}' && filter !== 'null' && filter.trim() !== ''
     ? entities.filter(entity => {
-        const matches = entity.properties.essence === filter;
+        const matches = entity.properties_list.essence === filter;
         return matches;
       })
     : entities;
@@ -243,7 +239,7 @@ function generateMockAllTableEntities(tableId: string, _pageSize: number = 100, 
         publish_procedure: `procedure-${tableId}-${i}`
       },
       date: `2024-01-${String(i).padStart(2, '0')}T10:30:00Z`,
-      properties: {
+      properties_list: {
         name: entityName,
         essence: treeEssences[essenceIndex],
         description: `This is entity ${i} from table ${tableId}`,
@@ -259,7 +255,7 @@ function generateMockAllTableEntities(tableId: string, _pageSize: number = 100, 
   // Apply filter if specified
   const filteredEntities = filter && filter !== '{}' && filter !== 'null' && filter.trim() !== ''
     ? allEntities.filter(entity => {
-        const matches = entity.properties.essence === filter;
+        const matches = entity.properties_list.essence === filter;
         return matches;
       })
     : allEntities;
@@ -351,7 +347,7 @@ app.post('/trpc/treeEntities.getAllTableEntities', ({ body: { table_id, pageSize
 
 app.get(`/coordConverter/ground2Image`, (req: any, res: any) => {
   const { lon, lat } = req.query;
-  res.json({ imageX: lon, imageY: lat });
+  res.json({ coordinates: [[lon], [lat]] });
 });
 
 // Image service endpoint

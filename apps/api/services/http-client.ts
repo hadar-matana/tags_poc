@@ -32,8 +32,8 @@ export class HttpClient {
     });
   }
 
-  get<T>(endpoint: string): Promise<T> {
-    return this.getAxiosInstance().get<T>(endpoint)
+  get<T>(endpoint: string, headers: Record<string, string> = {}): Promise<T> {
+    return this.getAxiosInstance().get<T>(endpoint, { headers })
       .then(response => response.data)
       .catch(error => {
         if (axios.isAxiosError(error)) {
@@ -46,8 +46,8 @@ export class HttpClient {
       });
   }
 
-  post<T>(endpoint: string, body: any): Promise<T> {
-    return this.getAxiosInstance().post<T>(endpoint, body)
+  post<T>(endpoint: string, body: any, headers: Record<string, string> = {}): Promise<T> {
+    return this.getAxiosInstance().post<T>(endpoint, body, { headers })
       .then(response => response.data)
       .catch(error => {
         if (axios.isAxiosError(error)) {

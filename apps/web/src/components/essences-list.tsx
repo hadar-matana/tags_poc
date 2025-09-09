@@ -5,21 +5,19 @@ import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
 import { TreeOfValuesContext } from "@/store/tree-of-values-context";
 import type { TreeOfValuesNode } from "@zohan/api/types/tree-api-types";
+import { config } from "../../config";
 
 export const EssencesList = () => {
   const { selectedEssence, setSelectedEssence } = useContext(TreeOfValuesContext);
   const treeOfValuesQuery = useQuery(
-    trpc.treeEntities.getTreeOfValues.queryOptions({ table_id: "users", field_id: "type" })
+    trpc.treeEntities.getTreeOfValues.queryOptions({ table_id: config.treeTableId, field_id: config.treeTableField })
   );
   
   function flattenTree(tree: TreeOfValuesNode, parentPath = ""): string[] {
     let result: string[] = [];
-    let currentPath;
+    let currentPath = parentPath ? `${parentPath}\/${tree.name}` : tree.name;
+    result = [currentPath];
     
-    if (!tree.name.includes('Root Node')) {
-      currentPath = parentPath ? `${parentPath}\\${tree.name}` : tree.name;
-      result = [currentPath];
-    }
     if (tree.children && tree.children.length > 0) {
       for (const child of tree.children) {
         result = result.concat(flattenTree(child, currentPath));
@@ -28,7 +26,14 @@ export const EssencesList = () => {
     return result;
   }
   
-  let essences: string[] = treeOfValuesQuery.data?.treeOfValues[0] ? flattenTree(treeOfValuesQuery.data?.treeOfValues[0]) : []; 
+  let essences: string[] = [];
+  if (treeOfValuesQuery.data?.tree_of_values?.[0]) {
+    treeOfValuesQuery.data?.tree_of_values.forEach(parentTreeNode => {
+      essences = essences.concat(flattenTree(parentTreeNode))
+    });
+  }
+  
+  essences = essences.filter(essence => essence === config.wantedEssenceRoot || essence.includes(config.wantedEssenceNode));
   
   return (
     <div className="w-[30%] p-4 bg-white border rounded-lg flex flex-col gap-2 h-full">

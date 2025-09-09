@@ -125,7 +125,7 @@ export const ImageDemo = () => {
       {entities && entities.length > 0 && (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {entities.map((entity: TableEntity, index: number) => (
-            <EntityImage key={`${entity.exclusiveId.tableId}-${index}`} entity={entity} />
+            <EntityImage key={`${entity.exclusive_id.tableId}-${index}`} entity={entity} />
           ))}
         </div>
       )}

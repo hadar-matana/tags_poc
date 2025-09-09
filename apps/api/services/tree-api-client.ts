@@ -15,6 +15,8 @@ export class TreeApiClient {
   private httpClient?: HttpClient;
   private baseUrl?: string;
   private processedBaseUrl?: string;
+  private treeApiHeaders: Record<string, string> | undefined = treeEntitiesConfig.customHeaders;
+  private treeTableEntitiesReqFilterTemplate = treeEntitiesConfig.reqTableEntitiesFilterTemplate;
 
   private constructor(baseUrl?: string) {
     this.baseUrl = baseUrl;
@@ -37,7 +39,7 @@ export class TreeApiClient {
 
   async getTreeOfValues({ table_id, field_id }: TreeOfValuesParams): Promise<TreeOfValuesResponse> {
     const endpoint = treeEntitiesEndpoints.treeOfValues(table_id, field_id);
-    return this.getHttpClient().get<TreeOfValuesResponse>(endpoint);
+    return this.getHttpClient().get<TreeOfValuesResponse>(endpoint, this.treeApiHeaders);
   }
 
   async getTableEntities({ 
@@ -48,14 +50,14 @@ export class TreeApiClient {
     filter
   }: TableEntitiesParams): Promise<TableEntitiesResponse> {
     const endpoint = treeEntitiesEndpoints.tableEntities(table_id, from, to, sort_by);
-    const requestBody: TableEntitiesRequestBody = { filter };
+    const requestBody: TableEntitiesRequestBody = JSON.parse(this.treeTableEntitiesReqFilterTemplate.replace('my_filter', JSON.stringify(filter)));
 
-    const response = await this.getHttpClient().post<TableEntitiesResponse>(endpoint, requestBody);
+    const response = await this.getHttpClient().post<TableEntitiesResponse>(endpoint, requestBody, this.treeApiHeaders);
 
     const shouldNormalize =
       this.shouldPreferImageProxy() &&
       Array.isArray(response.entities_list) &&
-      response.entities_list.some(e => e?.properties?.originalImg);
+      response.entities_list.some(e => e?.properties_list?.originalImg);
 
     const entities = shouldNormalize
       ? this.normalizeImageUrls(response.entities_list)
@@ -103,12 +105,12 @@ export class TreeApiClient {
     const base = this.processedBaseUrl || this.processBaseUrl(this.baseUrl);
 
     return entities.map(entity => {
-      if (entity?.properties?.originalImg) {
-        const preferredImageUrl = `${base}/api/image/${entity.exclusiveId.dataStore}/${entity.exclusiveId.tableId}`;
+      if (entity?.properties_list?.originalImg) {
+        const preferredImageUrl = `${base}/api/image/${entity.exclusive_id.dataStore}/${entity.exclusive_id.tableId}`;
         return {
           ...entity,
-          properties: {
-            ...entity.properties,
+          properties_list: {
+            ...entity.properties_list,
             img: preferredImageUrl,
           },
         };
