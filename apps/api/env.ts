@@ -15,7 +15,10 @@ const envSchema = z.object({
   IMAGE_SERVICE_BASE_URL: z.string(),
   COORD_CONV_GROUND_2_IMAGE_PATH: z.string(),
   COORD_CONV_LON_NAME: z.string(),
-  COORD_CONV_LAT_NAME: z.string()
+  COORD_CONV_LAT_NAME: z.string(),
+  REQUIRED_PROPERTIES: z.string().transform(str => 
+    str ? str.split(',').map(prop => prop.trim()) : undefined
+  ).optional()
 });
 
 const env = envSchema.parse(process.env);

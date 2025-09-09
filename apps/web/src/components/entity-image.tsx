@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { TableEntity } from '@zohan/api/types/tree-api-types';
 import { Button } from '@zohan/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@zohan/ui/card';
-import { Alert, AlertDescription } from '@zohan/ui/alert';
 import { ImageIcon, AlertCircle } from 'lucide-react';
 
 interface EntityImageProps {

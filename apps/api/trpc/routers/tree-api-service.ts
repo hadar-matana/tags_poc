@@ -9,6 +9,7 @@ import {
   getTableEntitiesSchema,
   getImageUrlSchema,
 } from './tree-api-validation-schemas';
+import { treeEntitiesConfig } from '../../config';
 
 const treeApiClient = TreeApiClient.getInstance();
 const imageApiClient = ImageApiClient.getInstance();
@@ -33,7 +34,10 @@ export const treeEntitiesRouter = router({
   getAllTableEntities: publicProcedure
     .input(getAllTableEntitiesSchema)
     .query(async ({ input }): Promise<TableEntity[]> => {
-      return treeApiClient.getAllTableEntities(input);
+      const entities = await treeApiClient.getAllTableEntities(input);
+      // Filter entities that have all required properties (only if requiredProperties is defined and not empty)
+      return entities.filter(ent => 
+        treeEntitiesConfig.requiredProperties.every(propName => Boolean(ent.properties[propName])));      
     }),
 
   getImageUrl: publicProcedure

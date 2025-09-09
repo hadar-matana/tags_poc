@@ -8,6 +8,7 @@ export interface TreeApiConfig {
   defaultSortBy: string;
   reqTableEntitiesFilterTemplate: string;
   useTrpcImageUrls: boolean;
+  requiredProperties: string[];
   customHeaders: Record<string, string> | undefined
 }
 
@@ -36,7 +37,8 @@ export const treeEntitiesConfig: TreeApiConfig = {
   defaultSortBy: env.TREE_ENTITIES_DEFAULT_SORT_BY!,
   reqTableEntitiesFilterTemplate: env.TREE_TABLE_ENTITIES_REQ_FILTER_TEMPLATE,
   useTrpcImageUrls: env.USE_TRPC_IMAGE_URLS === 'true',
-  customHeaders: env.TREE_CUSTOM_HEADERS,
+  requiredProperties: env.REQUIRED_PROPERTIES!,
+  customHeaders: env.TREE_CUSTOM_HEADERS
 };
 
 export const imageServiceConfig: ImageServiceConfig = {
