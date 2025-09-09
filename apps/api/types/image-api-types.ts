@@ -5,7 +5,7 @@ export interface ImageServiceParams {
 }
 
 export interface ImageServiceResponse {
-  imageUrl: string;
+  thumbnail: string;
   success: boolean;
   error?: string;
 }

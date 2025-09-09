@@ -57,7 +57,7 @@ export class TreeApiClient {
     const shouldNormalize =
       this.shouldPreferImageProxy() &&
       Array.isArray(response.entities_list) &&
-      response.entities_list.some(e => e?.properties_list?.originalImg);
+      response.entities_list.some(e => e?.properties_list?.thumbnail);
 
     const entities = shouldNormalize
       ? this.normalizeImageUrls(response.entities_list)
@@ -105,7 +105,7 @@ export class TreeApiClient {
     const base = this.processedBaseUrl || this.processBaseUrl(this.baseUrl);
 
     return entities.map(entity => {
-      if (entity?.properties_list?.originalImg) {
+      if (entity?.properties_list?.thumbnail) {
         const preferredImageUrl = `${base}/api/image/${entity.exclusive_id.dataStore}/${entity.exclusive_id.tableId}`;
         return {
           ...entity,
