@@ -89,9 +89,9 @@ export const EntitiesGrid = () => {
           {entities?.map((entity) => (
             <Card onClick={() => onCardClicked(entity)}
               key={ entity.key }
-              className="min-w-[180px] bg-purple-100 border border-purple-300 rounded-lg flex flex-col justify-end shadow-none cursor-pointer"
+              className="w-[15.675vw] h-[calc(15.625vw_+_97px)] bg-purple-100 border border-purple-300 rounded-lg flex flex-col justify-end shadow-none cursor-pointer"
             >
-              <div className="min-w-[180px] h-[180px]">
+              <div className="w-[15.625vw] h-[15.625vw]">
                 <img src={String(entity?.thumbnail)} alt='image not found'/>
               </div>
               <div className="bg-purple-200 border-t border-purple-300 rounded-b-lg px-2 py-2 flex flex-col items-end">
