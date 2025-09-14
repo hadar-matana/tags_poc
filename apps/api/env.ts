@@ -10,7 +10,7 @@ const envSchema = z.object({
   TREE_ENTITIES_DEFAULT_PAGE_SIZE: z.string(),
   TREE_ENTITIES_DEFAULT_SORT_BY: z.string(),
   TREE_TABLE_ENTITIES_REQ_FILTER_TEMPLATE: z.string(),
-  TREE_CUSTOM_HEADERS: z.record(z.string()).optional(),
+  TREE_CUSTOM_HEADERS: z.string().transform((val) => JSON.parse(val)).optional(),
   USE_TRPC_IMAGE_URLS: z.string().optional(),
   IMAGE_SERVICE_BASE_URL: z.string(),
   COORD_CONV_GROUND_2_IMAGE_PATH: z.string(),

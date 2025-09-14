@@ -7,8 +7,9 @@ export const config = {
   destLinkPrefix: import.meta.env.VITE_DEST_LINK_PREFIX,
   destLinkXName: import.meta.env.VITE_DEST_LINK_X_NAME,
   destLinkYName: import.meta.env.VITE_DEST_LINK_Y_NAME,
-  treeTableId: import.meta.env.TABLE_ID || "users",
-  treeTableField: import.meta.env.TABLE_FIELD || "type",
-  wantedEssenceRoot: import.meta.env.WANTED_ESSENCE_ROOT || 'Category A - users',
-  wantedEssenceNode: import.meta.env.WANTED_ESSENCE_NODE || 'Category A - users/Subcategory A'
+  treeTableId: import.meta.env.VITE_TABLE_ID || "users",
+  treeTableField: import.meta.env.VITE_TABLE_FIELD || "type",
+  wantedEssenceRoot: import.meta.env.VITE_WANTED_ESSENCE_ROOT || 'Category A - users',
+  wantedEssenceNode: import.meta.env.VITE_WANTED_ESSENCE_NODE || 'Category A - users/Subcategory A',
+  trpcServerPrefix: import.meta.env.VITE_TRPC_SERVER_PREFIX || ''
 }

@@ -347,7 +347,7 @@ app.post('/trpc/treeEntities.getAllTableEntities', ({ body: { table_id, pageSize
 
 app.get(`/coordConverter/ground2Image`, (req: any, res: any) => {
   const { lon, lat } = req.query;
-  res.json({ coordinates: [[lon], [lat]] });
+  res.json({ coordinates: [[lon, lat]] });
 });
 
 // Image service endpoint
