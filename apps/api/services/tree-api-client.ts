@@ -9,6 +9,7 @@ import type {
 import type { GetAllTableEntitiesInput } from '../trpc/routers/tree-api-validation-schemas';
 import { treeEntitiesConfig, treeEntitiesEndpoints } from '../config';
 import { HttpClient } from './http-client';
+import env from '../env';
 
 export class TreeApiClient {
   private static instance: TreeApiClient;
@@ -88,9 +89,26 @@ export class TreeApiClient {
       }
     }
 
-    return allEntities;
+    const flattenedEntities = this.flattenArrayFields(allEntities);
+    return flattenedEntities;
   }
 
+  private flattenArrayFields(entities: TableEntity[]): TableEntity[] {
+    return entities.map(entity => {
+      const flattened = { ...entity };
+      
+      env.ARRAY_FIELDS_TO_FLATTEN.forEach(fieldName => {
+        if (flattened.properties_list && fieldName in flattened.properties_list) {
+          const value = flattened.properties_list[fieldName];
+          if (Array.isArray(value)) {
+            flattened.properties_list[fieldName] = value.join(', ');
+          }
+        }
+      });
+      
+      return flattened;
+    });
+  }
 
   private processBaseUrl(baseUrl?: string): string {
     return (baseUrl || treeEntitiesConfig.baseUrl).replace(/\/$/, '');

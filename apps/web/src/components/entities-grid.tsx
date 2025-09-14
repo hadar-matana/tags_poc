@@ -81,6 +81,21 @@ export const EntitiesGrid = () => {
       return <EntitiesGridSkeleton />;
     }
 
+    if (!entities || entities.length === 0) {
+      return (
+        <div className="w-full h-full flex items-center justify-center p-4">
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-gray-600 mb-2">
+              No entities found
+            </div>
+            <div className="text-sm text-gray-500">
+              No entities were found for the selected essence
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="w-full h-full p-4">
         <div

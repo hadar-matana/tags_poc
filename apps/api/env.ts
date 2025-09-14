@@ -18,7 +18,10 @@ const envSchema = z.object({
   COORD_CONV_LAT_NAME: z.string(),
   REQUIRED_PROPERTIES: z.string().transform(str => 
     str ? str.split(',').map(prop => prop.trim()) : undefined
-  ).optional()
+  ).optional(),
+  ARRAY_FIELDS_TO_FLATTEN: z.string().transform(str => 
+    str ? str.split(',').map(field => field.trim()) : []
+  ).default('')
 });
 
 const env = envSchema.parse(process.env);
