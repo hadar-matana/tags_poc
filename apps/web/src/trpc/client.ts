@@ -2,6 +2,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
 import type { AppRouter } from '@zohan/api/trpc/routers/_app';
+import { config } from '../../config';
 import superjson from 'superjson';
 
 export const queryClient = new QueryClient();
@@ -9,7 +10,7 @@ export const queryClient = new QueryClient();
 export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: 'http://localhost:3000/trpc',
+      url: `${config.trpcServerPrefix}/trpc`,
       transformer: superjson,
     }),
   ],

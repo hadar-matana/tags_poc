@@ -10,13 +10,15 @@ import { center } from "@turf/turf";
 import { toast } from "sonner";
 import type { Polygon } from "geojson";
 import { EntitiesGridSkeleton } from "./entities-grid-skeleton";
+import { getPolygonCenter } from "@/lib/detect-pixel-centroied";
 
 interface ViewedTableEntity {
   key: string;
   name: string;
   imageId: string;
   polygon: Polygon;
-  [key: string]: string | Polygon;
+  center_pixel: {x: number, y: number};
+  [key: string]: string | Polygon | {x: number, y: number};
 }
 
 export const EntitiesGrid = () => {
@@ -44,6 +46,7 @@ export const EntitiesGrid = () => {
         name: ent.properties_list[config.entityNameProperty],
         imageId: ent.properties_list[config.imageFieldName],
         thumbnail: ent.properties_list.thumbnail,
+        center_pixel: ent.properties_list?.pixel_vector ? getPolygonCenter(ent.properties_list.pixel_vector) : undefined,
         polygon: ent.geo?.geo_json,
         ...getPropDisplayFields(ent),
       }
@@ -51,9 +54,20 @@ export const EntitiesGrid = () => {
 
     const onCardClicked = async (entity: ViewedTableEntity) => {
       try {
-        const centerPoint = center(entity.polygon).geometry.coordinates;
-        const convertedPoint = await mutation.mutateAsync({imageId: entity.imageId, lon: centerPoint[0], lat: centerPoint[1]});
-        const destLink = `${config.destLinkPrefix}${entity[config.imageFieldName]}&${config.destLinkXName}=${convertedPoint.coordinates[0][0]}&${config.destLinkYName}=${convertedPoint.coordinates[0][1]}`;
+        let destLinkX;
+        let destLinkY;
+
+        if (entity.center_pixel) {
+          destLinkX = entity.center_pixel.x;
+          destLinkY = entity.center_pixel.y;
+        } else {
+          const centerPoint = center(entity.polygon).geometry.coordinates;
+          const convertedPoint = await mutation.mutateAsync({imageId: entity.imageId, lon: centerPoint[0], lat: centerPoint[1]});
+          destLinkX = convertedPoint.coordinates[0][0];
+          destLinkY = convertedPoint.coordinates[0][1];
+        }
+
+        const destLink = `${config.destLinkPrefix}${entity.imageId}&${config.destLinkXName}=${destLinkX}&${config.destLinkYName}=${destLinkY}`;
         await navigator.clipboard.writeText(destLink);
         toast.success("Image link copied to clipboard!");
       } catch (error) {
@@ -101,31 +115,31 @@ export const EntitiesGrid = () => {
                       <div className="text-xs text-black w-full block flex text-right">
                         <span className="font-bold ml-1">{config.propertyLabels[config.entityHeaderProperty]}:</span>
                         <span className="font-bold ml-1 overflow-hidden line-clamp-2 whitespace-nowrap overflow-hidden text-ellipsis">
-                          {String(entity[config.entityHeaderProperty]) || ""}
+                          {entity[config.entityHeaderProperty] ? String(entity[config.entityHeaderProperty]) : ""}
                         </span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent className="bg-black text-white">
                       <div>
                         <div className="font-semibold">{config.propertyLabels[config.entityHeaderProperty]}:</div>
-                        <div>{String(entity[config.entityHeaderProperty]) || ""}</div>
+                        <div>{entity[config.entityHeaderProperty] ? String(entity[config.entityHeaderProperty]) : ""}</div>
                       </div>
                     </TooltipContent>
                   </Tooltip>
-                  {config.propertiesSelectedFields.map((field: string) => (
+                  {config.propertiesSelectedFields.filter((f: string) => f !== config.entityHeaderProperty).map((field: string) => (
                     <Tooltip key={field}>
                       <TooltipTrigger asChild>
                         <div className="text-xs text-black w-full flex block text-right">
                           <span className="ml-1">{config.propertyLabels[field]}:</span>
                           <span className="ml-1 overflow-hidden line-clamp-2 whitespace-nowrap overflow-hidden text-ellipsis">
-                            {typeof entity[field] === "string" ? entity[field] : ""}
+                            {typeof entity?.[field] === "string" ? entity[field] : ""}
                           </span>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent className="bg-black text-white">
                         <div>
                           <div className="font-semibold">{config.propertyLabels[field]}:</div>
-                          <div>{typeof entity[field] === "string" ? entity[field] : ""}</div>
+                          <div>{typeof entity?.[field] === "string" ? entity[field] : ""}</div>
                         </div>
                       </TooltipContent>
                     </Tooltip>
