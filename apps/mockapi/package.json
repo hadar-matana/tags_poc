@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx index.ts",
     "start": "node dist/index.js",
-    "build": "tsc && node dist/index.js",
+    "build": "tsc",
+    "build:start": "tsc && node dist/index.js",
     "test": "node test-mock-api.js",
     "test:dynamic": "node test-dynamic-mock.js",
     "image-service": "node image-service.js"
