@@ -88,15 +88,14 @@ export class TreeApiClient {
         from += pageSize;
       }
     }
-
-    const flattenedEntities = this.flattenArrayFields(allEntities);
-    const sortedEntities = flattenedEntities.sort((a,b) => {
+    const sortedEntities = allEntities.sort((a,b) => {
       const timeA = a.properties_list.photo_time ? new Date(a.properties_list.photo_time).getTime():0;
       const timeB = b.properties_list.photo_time ? new Date(b.properties_list.photo_time).getTime():0;
       return timeB - timeA
     })
+    const flattenedEntities = this.flattenArrayFields(sortedEntities);
 
-    return sortedEntities;
+    return flattenedEntities;
   }
 
   private flattenArrayFields(entities: TableEntity[]): TableEntity[] {
