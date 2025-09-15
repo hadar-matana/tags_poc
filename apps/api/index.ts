@@ -1,79 +1,47 @@
 import * as trpcExpress from '@trpc/server/adapters/express';
 import express from 'express';
 import cors from 'cors';
-import axios from 'axios';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { createContext } from './trpc/context';
 import { appRouter } from './trpc/routers/_app';
 import env from './env';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// cr - you should create a bootstrap file
 const app = express();
-app.use(cors({
-  origin: '*',
-  credentials: true,
-}));
+app.use(cors());
 
-app.use('/trpc', trpcExpress.createExpressMiddleware({
-  router: appRouter,
-  createContext,
-  onError: ({ error }) => {
-    console.error('tRPC Error:', error);
-  },
-}));
+// Serve static files from the frontend build
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Image serving endpoint
-app.get('/api/image/:tableId/:entityId', async ({ params: { tableId, entityId } }, res) => {
-  try {
-
-    // Mock image service - return placeholder images
-    const imageUrls = [
-      'https://picsum.photos/400/300?random=1',
-      'https://picsum.photos/400/300?random=2',
-      'https://picsum.photos/400/300?random=3',
-      'https://picsum.photos/400/300?random=4',
-      'https://picsum.photos/400/300?random=5',
-    ];
-
-    // Generate a consistent image URL based on the entity ID
-    const hash = tableId.charCodeAt(0) + tableId.length + (entityId || '').length;
-    const imageIndex = hash % imageUrls.length;
-    const imageUrl = imageUrls[imageIndex];
+app.use('/trpc', trpcExpress.createExpressMiddleware({ router: appRouter, createContext }));
 
 
-    // Fetch and proxy the image
-    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-    
-    // Set proper headers for image - use the actual content type from response
-    const contentType = response.headers['content-type'] || 'image/jpeg';
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-
-    res.send(Buffer.from(response.data));
-  } catch (error) {
-    console.error('Image serving error:', error);
-    res.status(500).json({ error: 'Failed to serve image' });
+// Catch-all handler: send back React's index.html file for any non-API routes
+app.use((req, res, next) => {
+  // Don't serve the React app for API routes
+  if (req.path.startsWith('/api') || req.path.startsWith('/trpc')) {
+    return next(); // Let Express handle the 404
   }
-});
 
-// 404 handler for unmatched routes
-app.use('/*', (req, res) => {
-  res.status(404).json({
-    error: 'Not found',
-    message: `No route found for ${req.method} ${req.originalUrl}`,
+  // Serve React app for all other routes
+  res.sendFile(path.join(__dirname, 'public', 'index.html'), err => {
+    if (err) {
+      res.status(500).send('Error serving frontend');
+    }
   });
 });
 
-
-const startServer = () => {
-  try {
-    app.listen(env.PORT, () => {
-      console.log(`Server running on port ${env.PORT}`);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
+const startServer = async () => {
+  //   await connectDB();
+  app.listen(env.PORT, () => {
+    console.log(`Server running on port ${env.PORT}`);
+  });
 };
 
-startServer();
+startServer().catch(error => {
+  console.error('Failed to start server:', error);
+  process.exit(1);
+});

@@ -90,18 +90,45 @@ export class TreeApiClient {
     }
 
     const flattenedEntities = this.flattenArrayFields(allEntities);
-    return flattenedEntities;
+    const sortedEntities = flattenedEntities.sort((a,b) => {
+      const timeA = a.properties_list.photo_time ? new Date(a.properties_list.photo_time).getTime():0;
+      const timeB = b.properties_list.photo_time ? new Date(b.properties_list.photo_time).getTime():0;
+      return timeB - timeA
+    })
+
+    return sortedEntities;
   }
 
   private flattenArrayFields(entities: TableEntity[]): TableEntity[] {
     return entities.map(entity => {
       const flattened = { ...entity };
       
+      // Flatten array fields
       env.ARRAY_FIELDS_TO_FLATTEN.forEach(fieldName => {
         if (flattened.properties_list && fieldName in flattened.properties_list) {
           const value = flattened.properties_list[fieldName];
           if (Array.isArray(value)) {
             flattened.properties_list[fieldName] = value.join(', ');
+          }
+        }
+      });
+
+      // Format date fields
+      const dateFields = env.DATE_FIELDS.length > 0 ? env.DATE_FIELDS : ['photo_time'];
+      dateFields.forEach(fieldName => {
+        if (flattened.properties_list && fieldName in flattened.properties_list) {
+          const value = flattened.properties_list[fieldName];
+          if (value) {
+            const dateObj = new Date(value);
+            if (!isNaN(dateObj.getTime())) {
+              // Format as dd/MM/yyyy HH:mm
+              const day = String(dateObj.getDate()).padStart(2, '0');
+              const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+              const year = dateObj.getFullYear();
+              const hours = String(dateObj.getHours()).padStart(2, '0');
+              const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+              flattened.properties_list[fieldName] = `${day}/${month}/${year} ${hours}:${minutes}`;
+            }
           }
         }
       });

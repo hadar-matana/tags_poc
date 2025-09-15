@@ -190,6 +190,7 @@ function generateMockTableEntities(tableId: string, from: number = 1, to: number
         category: `category-${i % 3}`,
         sortBy: sortBy,
         imageId: "trump_gaza_001",
+        photo_time: `2024-01-${String(i).padStart(2, '0')}T${String(10 + (i % 12)).padStart(2, '0')}:${String(30 + (i % 30)).padStart(2, '0')}:${String(15 + (i % 45)).padStart(2, '0')}.${String(100 + (i % 900)).padStart(3, '0')}Z`,
         thumbnail: `https://picsum.photos/${300 + (i % 5) * 100}/${200 + (i % 4) * 50}?random=${tableId}-${i}`
       }
     });
@@ -247,6 +248,7 @@ function generateMockAllTableEntities(tableId: string, _pageSize: number = 100, 
         category: `category-${i % 3}`,
         sortBy: sortBy,
         imageId: "trump_gaza_002",
+        photo_time: `2024-01-${String(i).padStart(2, '0')}T${String(10 + (i % 12)).padStart(2, '0')}:${String(30 + (i % 30)).padStart(2, '0')}:${String(15 + (i % 45)).padStart(2, '0')}.${String(100 + (i % 900)).padStart(3, '0')}Z`,
         thumbnail: `https://picsum.photos/${300 + (i % 5) * 100}/${200 + (i % 4) * 50}?random=${tableId}-${i}`
       }
     });

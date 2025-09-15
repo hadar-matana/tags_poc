@@ -11,5 +11,7 @@ export const config = {
   treeTableField: import.meta.env.VITE_TABLE_FIELD || "type",
   wantedEssenceRoot: import.meta.env.VITE_WANTED_ESSENCE_ROOT || 'Category A - users',
   wantedEssenceNode: import.meta.env.VITE_WANTED_ESSENCE_NODE || 'Category A - users/Subcategory A',
-  trpcServerPrefix: import.meta.env.VITE_TRPC_SERVER_PREFIX || ''
+  trpcServerPrefix: import.meta.env.VITE_TRPC_SERVER_PREFIX || '',
+  dateFields: JSON.parse(import.meta.env.VITE_DATE_FIELDS || '["photo_time"]'),
+
 }
