@@ -21,6 +21,9 @@ const envSchema = z.object({
   ).optional(),
   ARRAY_FIELDS_TO_FLATTEN: z.string().transform(str => 
     str ? str.split(',').map(field => field.trim()) : []
+  ).default(''),
+  DATE_FIELDS: z.string().transform(str => 
+    str ? str.split(',').map(field => field.trim()) : []
   ).default('')
 });
 

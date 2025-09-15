@@ -103,6 +103,7 @@ function generateMockTableEntities(tableId, from = 1, to = 10, sortBy = 'Creatio
         status: i % 2 === 0 ? 'active' : 'inactive',
         category: `category-${i % 3}`,
         sortBy: sortBy,
+        photo_time: `2024-01-${String(i).padStart(2, '0')}T${String(10 + (i % 12)).padStart(2, '0')}:${String(30 + (i % 30)).padStart(2, '0')}:${String(15 + (i % 45)).padStart(2, '0')}.${String(100 + (i % 900)).padStart(3, '0')}Z`,
         additionalProp1: `prop1-${tableId}-${i}`,
         additionalProp2: `prop2-${tableId}-${i}`,
         additionalProp3: `prop3-${tableId}-${i}`,
