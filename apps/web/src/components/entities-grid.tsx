@@ -69,10 +69,10 @@ export const EntitiesGrid = () => {
 
         const destLink = `${config.destLinkPrefix}${entity.imageId}&${config.destLinkXName}=${destLinkX}&${config.destLinkYName}=${destLinkY}`;
         await navigator.clipboard.writeText(destLink);
-        toast.success("Image link copied to clipboard!");
+        toast.success("הקישור הועתק בהצלחה!");
       } catch (error) {
-        console.error("Failed to copy link to clipboard:", error);
-        toast.error("Failed to copy link to clipboard. Please try again.");
+        console.error("העתקת הקישור נכשלה: ", error);
+        toast.error("העתקת הקישור נכשלה. נסה שנית.");
       }
     }
    
@@ -81,10 +81,10 @@ export const EntitiesGrid = () => {
         <div className="w-full h-full flex items-center justify-center p-4">
           <div className="text-center">
             <div className="text-2xl font-semibold text-gray-600 mb-2">
-              Please choose essence
+              בחר מהות לסינון
             </div>
             <div className="text-sm text-gray-500">
-              Select an essence from the list to view entities
+              בחר מהות מהרשימה המוצגת לסינון הישויות
             </div>
           </div>
         </div>
@@ -100,10 +100,10 @@ export const EntitiesGrid = () => {
         <div className="w-full h-full flex items-center justify-center p-4">
           <div className="text-center">
             <div className="text-2xl font-semibold text-gray-600 mb-2">
-              No entities found
+              לא נמצאו ישויות
             </div>
             <div className="text-sm text-gray-500">
-              No entities were found for the selected essence
+              לא נמצאו ישויות מתאימות למהות שנבחרה
             </div>
           </div>
         </div>
