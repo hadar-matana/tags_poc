@@ -13,6 +13,7 @@ rm -rf dist
 
 # Use Turborepo to build everything in parallel with proper dependency management
 echo "🏗️  Building all packages with Turborepo..."
+pnpm i
 pnpm run build
 
 # Create root dist directory structure
