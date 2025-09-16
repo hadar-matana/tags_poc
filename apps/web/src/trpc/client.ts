@@ -9,7 +9,13 @@ const trpcUrl = new URL(
   config.apiBase
 ).toString();
 
-export const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export const trpcClient = createTRPCClient<AppRouter>({
   links: [
