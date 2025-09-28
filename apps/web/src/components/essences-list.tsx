@@ -6,13 +6,17 @@ import { useContext } from "react";
 import { TreeOfValuesContext } from "@/store/tree-of-values-context";
 import type { TreeOfValuesNode } from "@zohan/api/types/tree-api-types";
 import { EssencesListSkeleton } from "./essences-list-skeleton";
-import { config } from "../../config";
+import { useConfigContext } from "@/contexts/config-context";
 
 export const EssencesList = () => {
   const { selectedEssence, setSelectedEssence } = useContext(TreeOfValuesContext);
-  const treeOfValuesQuery = useQuery(
-    trpc.treeEntities.getTreeOfValues.queryOptions({ table_id: config.treeTableId, field_id: config.treeTableField })
-  );
+  const config = useConfigContext().appConfig;
+  
+  const treeOfValuesQuery = useQuery(trpc.treeEntities.getTreeOfValues.queryOptions({ table_id: config.treeTableId, field_id: config.treeTableField}));
+
+  if (treeOfValuesQuery.isLoading || treeOfValuesQuery.isFetching) {
+    return <EssencesListSkeleton />;
+  }
   
   function flattenTree(tree: TreeOfValuesNode, parentPath = ""): string[] {
     let result: string[] = [];
@@ -36,9 +40,6 @@ export const EssencesList = () => {
   
   essences = essences.filter(essence => essence === config.wantedEssenceRoot || essence.includes(config.wantedEssenceNode));
   
-  if (treeOfValuesQuery.isLoading || treeOfValuesQuery.isFetching) {
-    return <EssencesListSkeleton />;
-  }
   return (
     <div className="w-[30%] p-4 bg-white border rounded-lg flex flex-col gap-2 h-full">
       <div className="flex flex-col gap-2 h-full overflow-y-auto">
