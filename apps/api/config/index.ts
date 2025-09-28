@@ -23,6 +23,22 @@ export interface CoordConverterConfig {
   latParamName: string;
 }
 
+export interface ClientConfig {
+  imageServiceBase: string;
+  imageFieldName: string;
+  entityNameProperty: string;
+  entityHeaderProperty: string;
+  propertiesSelectedFields: Array<string>;
+  propertyLabels: Record<string, string>;
+  destLinkPrefix: string;
+  destLinkXName: string;
+  destLinkYName: string;
+  treeTableId: string;
+  treeTableField: string;
+  wantedEssenceRoot: string;
+  wantedEssenceNode: string;
+}
+
 export interface ApiConfig {
   treeEntities: TreeApiConfig;
   imageService: ImageServiceConfig;
@@ -40,6 +56,22 @@ export const treeEntitiesConfig: TreeApiConfig = {
   requiredProperties: env.REQUIRED_PROPERTIES!,
   customHeaders: env.TREE_CUSTOM_HEADERS
 };
+
+export const clientConfig: ClientConfig = {
+  imageServiceBase: env.CLIENT_IMAGE_SERVICE_BASE_URL,
+  imageFieldName: env.CLIENT_IMAGE_FIELD_NAME,
+  entityNameProperty: env.CLIENT_ENTITY_NAME_PROPERTY,
+  entityHeaderProperty: env.CLIENT_ENTITY_HEADER_PROPERTY,
+  propertiesSelectedFields: env.CLIENT_PROPERTIES_SELECTED_FIELDS,
+  propertyLabels: env.CLIENT_PROPERTY_LABELS,
+  destLinkPrefix: env.CLIENT_DEST_LINK_PREFIX,
+  destLinkXName: env.CLIENT_DEST_LINK_X_NAME,
+  destLinkYName: env.CLIENT_DEST_LINK_Y_NAME,
+  treeTableId: env.CLIENT_TABLE_ID,
+  treeTableField: env.CLIENT_TABLE_FIELD,
+  wantedEssenceRoot: env.CLIENT_WANTED_ESSENCE_ROOT,
+  wantedEssenceNode: env.CLIENT_WANTED_ESSENCE_NODE
+}
 
 export const imageServiceConfig: ImageServiceConfig = {
   baseUrl: env.IMAGE_SERVICE_BASE_URL!,

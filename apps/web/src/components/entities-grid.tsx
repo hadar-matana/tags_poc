@@ -4,26 +4,28 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import type { TableEntity } from "@zohan/api/types/tree-api-types";
 import { Card } from "@zohan/ui/components/card";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@zohan/ui/components/tooltip";
-import { config } from "../../config";
 import { useContext } from "react";
 import { center } from "@turf/turf";
 import { toast } from "sonner";
 import type { Polygon } from "geojson";
 import { EntitiesGridSkeleton } from "./entities-grid-skeleton";
 import { getPolygonCenter } from "@/lib/detect-pixel-centroied";
+import { useConfigContext } from "@/contexts/config-context";
 
 interface ViewedTableEntity {
   key: string;
   name: string;
   imageId: string;
   polygon: Polygon;
-  center_pixel: {x: number, y: number};
-  [key: string]: string | Polygon | {x: number, y: number};
+  thumbnail: string;
+  center_pixel: {x: number, y: number} | undefined;
+  [key: string]: string | Polygon | {x: number, y: number} | undefined;
 }
 
 export const EntitiesGrid = () => {
     const { selectedEssence } = useContext(TreeOfValuesContext);
-    
+    const config = useConfigContext().appConfig;
+
     const entitiesGridQuery = useQuery({
       ...trpc.treeEntities.getAllTableEntities.queryOptions({
         table_id: config.treeTableId,
@@ -31,8 +33,12 @@ export const EntitiesGrid = () => {
       }),
       enabled: !!selectedEssence
     });
-
+  
     const mutation = useMutation(trpc.coordConverter.ground2Image.mutationOptions({}));
+
+    if (entitiesGridQuery.isLoading || entitiesGridQuery.isFetching) {
+      return <EntitiesGridSkeleton />;
+    }
 
     const getPropDisplayFields = (ent: TableEntity) => {
       return config.propertiesSelectedFields.reduce((acc: Record<string, any>, field: string) => {
@@ -47,7 +53,7 @@ export const EntitiesGrid = () => {
         imageId: ent.properties_list[config.imageFieldName],
         thumbnail: ent.properties_list.thumbnail,
         center_pixel: ent.properties_list?.pixel_vector ? getPolygonCenter(ent.properties_list.pixel_vector) : undefined,
-        polygon: ent.geo?.geo_json,
+        polygon: ent.geo?.geo_json as Polygon,
         ...getPropDisplayFields(ent),
       }
     });
@@ -89,10 +95,6 @@ export const EntitiesGrid = () => {
           </div>
         </div>
       );
-    }
-
-    if (entitiesGridQuery.isLoading || entitiesGridQuery.isFetching) {
-      return <EntitiesGridSkeleton />;
     }
 
     if (!entities || entities.length === 0) {
