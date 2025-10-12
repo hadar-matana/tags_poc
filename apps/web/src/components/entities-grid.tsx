@@ -30,7 +30,7 @@ export const EntitiesGrid = () => {
   const entitiesGridQuery = useQuery({
     ...trpc.treeEntities.getAllTableEntities.queryOptions({
       table_id: config.treeTableId,
-      filter: '',
+      filter: selectedEssence,
     }),
     enabled: !!selectedEssence,
   });
