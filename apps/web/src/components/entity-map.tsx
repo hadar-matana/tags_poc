@@ -22,7 +22,7 @@ export const EntityMap = ({ imageId, center, className = '' }: EntityMapProps) =
     const map = L.map(mapRef.current, {
       zoomControl: true,
       attributionControl: false,
-      dragging: false,
+      dragging: true,
       scrollWheelZoom: false,
       doubleClickZoom: false,
       boxZoom: false,
@@ -43,7 +43,7 @@ export const EntityMap = ({ imageId, center, className = '' }: EntityMapProps) =
         mapInstanceRef.current = null;
       }
     };
-  }, [config]);
+  }, [config, center, imageId]);
 
   return <div ref={mapRef} className={className} />;
 };
