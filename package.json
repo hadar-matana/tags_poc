@@ -5,9 +5,15 @@
   "packageManager": "pnpm@10.11.0",
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build"
+    "build": "turbo run build",
+    "start:prod": "turbo run start:prod"
   },
   "dependencies": {
+    "@tanstack/react-router-devtools": "^1.131.27",
+    "@turf/turf": "^7.2.0",
     "turbo": "^2.5.4"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.16"
   }
 }

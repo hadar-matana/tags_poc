@@ -1,12 +1,11 @@
-// Tree Entities API Types
+import type { GeoJsonObject } from "geojson";
+
+ //Tree Entities API Types
 
 export interface ExclusiveId {
   dataStore: string;
   tableId: string;
-  entityId: string;
-  valueListId: string;
-  treeOfValuestId: string;
-  sequence: number;
+  entity_id: string;
 }
 
 export interface TreeOfValuesNode {
@@ -19,32 +18,20 @@ export interface TreeOfValuesResponse {
   type: string;
   name: string;
   displayName: string;
-  treeOfValues: TreeOfValuesNode[];
+  tree_of_values: TreeOfValuesNode[];
 }
 
-// Table Entities API Types
-
-export interface GeoJsonGeometry {
-  type: string;
-  coordinates: string;
-  geometries?: GeoJsonGeometry[];
-}
-
-export interface GeoJson {
-  type: string;
-  coordinates: string;
-  geometries: GeoJsonGeometry[];
-}
+ //Table Entities API Types
 
 export interface Geo {
   wkt: string;
-  geoJson: GeoJson;
+  geo_json: GeoJsonObject;
 }
 
 export interface Classification {
-  triangleId: string;
-  c1: number;
-  publishProcedure: string;
+  triangle: string;
+  clearance_level: number;
+  publish_procedure: string;
 }
 
 export interface EntityProperties {
@@ -52,26 +39,19 @@ export interface EntityProperties {
 }
 
 export interface TableEntity {
-  exclusiveId: string;
-  tableId: string;
-  entityId: string;
-  vlaueListId: string;
-  treeOfValuestId: string;
-  sequence: number;
+  exclusive_id: ExclusiveId;
   link: string;
   geo: Geo;
   classification: Classification;
   date: string;
-  properties: EntityProperties;
+  properties_list: EntityProperties;
 }
 
 export interface TableEntitiesResponse {
-  total_entities: number;
-  nextPage: string;
   entities_list: TableEntity[];
 }
 
-// Request Parameters Types
+ //Request Parameters Types
 
 export interface TreeOfValuesParams {
   table_id: string;
@@ -83,4 +63,9 @@ export interface TableEntitiesParams {
   from?: number;
   to?: number;
   sort_by?: string;
+  filter: string;
+}
+
+export interface TableEntitiesRequestBody {
+  filter: any;
 }

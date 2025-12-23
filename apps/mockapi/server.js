@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const { generateMockTreeOfValues, generateMockTableEntities } = require('./tree-api-logic');
+const { generateMockImageUrl } = require('./image-api-logic');
 
 const app = express();
 
@@ -7,110 +9,6 @@ app.use(cors());
 app.use(express.json());
 
 console.log('Mock API server started - using dynamic data generation');
-
-// Generate dynamic mock data based on input parameters
-function generateMockTreeOfValues(tableId, fieldId) {
-  return {
-    exclusiveId: {
-      dataStore: `datastore-${tableId}`,
-      tableId: tableId,
-      entityId: `entity-${fieldId}`,
-      valueListId: `value-list-${tableId}-${fieldId}`,
-      treeOfValuestId: `tree-${tableId}-${fieldId}`,
-      sequence: 1
-    },
-    type: `tree-type-${tableId}`,
-    name: `Tree of Values for Table ${tableId}`,
-    displayName: `Tree Display for ${tableId} - ${fieldId}`,
-    treeOfValues: [
-      {
-        name: `Root Node - ${tableId}`,
-        children: [
-          {
-            name: `Category A - ${fieldId}`,
-            children: [
-              { name: `Subcategory A1 - ${tableId}` },
-              { name: `Subcategory A2 - ${fieldId}` }
-            ]
-          },
-          {
-            name: `Category B - ${tableId}`,
-            children: [
-              { name: `Subcategory B1 - ${fieldId}` }
-            ]
-          },
-          {
-            name: `Category C - ${tableId}`,
-            children: [
-              { name: `Subcategory C1 - ${fieldId}` },
-              { name: `Subcategory C2 - ${tableId}` },
-              { name: `Subcategory C3 - ${fieldId}` }
-            ]
-          }
-        ]
-      }
-    ]
-  };
-}
-
-function generateMockTableEntities(tableId, from = 1, to = 10, sortBy = 'CreationTime') {
-  const entities = [];
-  const totalEntities = 150;
-  
-  for (let i = from; i <= Math.min(to, totalEntities); i++) {
-    entities.push({
-      exclusiveId: `exclusive-${tableId}-${i}`,
-      tableId: tableId,
-      entityId: `entity-${tableId}-${i}`,
-      vlaueListId: `value-list-${tableId}-${i}`,
-      treeOfValuestId: `tree-${tableId}-${i}`,
-      sequence: i,
-      link: `https://mock-link.com/${tableId}/entity/${i}`,
-      geo: {
-        wkt: `POINT(34.${7800 + i} 32.${800 + i})`,
-        geoJson: {
-          type: "Point",
-          coordinates: `34.${7800 + i},32.${800 + i}`,
-          geometries: [
-            {
-              type: "Polygon",
-              coordinates: `34.${7800 + i},32.${800 + i},34.${7801 + i},32.${800 + i},34.${7801 + i},32.${801 + i},34.${7800 + i},32.${801 + i},34.${7800 + i},32.${800 + i}`,
-              geometries: [
-                {
-                  type: "LineString",
-                  coordinates: `34.${7800 + i},32.${800 + i},34.${7801 + i},32.${801 + i}`,
-                  geometries: []
-                }
-              ]
-            }
-          ]
-        }
-      },
-      classification: {
-        triangleId: `triangle-${tableId}-${i}`,
-        c1: i,
-        publishProcedure: `procedure-${tableId}-${i}`
-      },
-      date: `2024-01-${String(i).padStart(2, '0')}T10:30:00Z`,
-      properties: {
-        name: `Entity ${i} from Table ${tableId}`,
-        description: `This is entity ${i} from table ${tableId}`,
-        status: i % 2 === 0 ? 'active' : 'inactive',
-        category: `category-${i % 3}`,
-        sortBy: sortBy,
-        additionalProp1: `prop1-${tableId}-${i}`,
-        additionalProp2: `prop2-${tableId}-${i}`,
-        additionalProp3: `prop3-${tableId}-${i}`
-      }
-    });
-  }
-
-  return {
-    total_entities: totalEntities,
-    nextPage: to < totalEntities ? `page-${to + 1}` : null,
-    entities_list: entities
-  };
-}
 
 // REST API endpoints (exact routes as specified)
 app.get('/v2.0/Tree/TreeOfValues/:table_id/:field_id', (req, res) => {
@@ -125,6 +23,25 @@ app.get('/v3.0/Tree/:table_id/TableEntities', (req, res) => {
   const { table_id } = req.params;
   const { from, to, sort_by } = req.query;
   console.log(`Mock API: GET /v3.0/Tree/${table_id}/TableEntities`, { from, to, sort_by });
+  
+  const mockData = generateMockTableEntities(
+    table_id, 
+    parseInt(from) || 1, 
+    parseInt(to) || 100, 
+    sort_by || 'CreationTime'
+  );
+  res.json(mockData);
+});
+
+app.post('/v3.0/Tree/:table_id/TableEntities', (req, res) => {
+  const { table_id } = req.params;
+  const { from, to, sort_by } = req.query;
+  const { filter } = req.body || {};
+  
+  console.log(`Mock API: POST /v3.0/Tree/${table_id}/TableEntities`);
+  console.log('  Query params:', req.query);
+  console.log('  Body:', req.body);
+  console.log('  Extracted values:', { from, to, sort_by, filter });
   
   const mockData = generateMockTableEntities(
     table_id, 
@@ -166,6 +83,49 @@ app.post('/trpc/treeEntities.getTableEntities', (req, res) => {
   res.json({ result: { data: mockData } });
 });
 
+// Image Service endpoints
+app.post('/api/image', (req, res) => {
+  const { exclusiveId } = req.body;
+  
+  console.log(`Mock API: POST /api/image`);
+  console.log('  Body:', req.body);
+  console.log('  Extracted exclusiveId:', exclusiveId);
+  
+  if (!exclusiveId) {
+    console.log('Mock API: Error - exclusiveId is required');
+    return res.status(400).json({
+      success: false,
+      error: 'exclusiveId is required',
+      thumbnail: '',
+    });
+  }
+
+  // Simulate processing time for realistic behavior
+  const processingDelay = 100 + Math.random() * 200; // 100-300ms
+  
+  setTimeout(() => {
+    try {
+      const imageUrl = generateMockImageUrl(exclusiveId);
+      const { dataStore, tableId } = exclusiveId;
+      
+      console.log(`Mock API: Generated image for entity ${dataStore}/${tableId}: ${imageUrl}`);
+      
+      res.json({
+        success: true,
+        thumbnail: imageUrl,
+        error: null,
+      });
+    } catch (error) {
+      console.error('Mock API: Error generating image:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        thumbnail: '',
+      });
+    }
+  }, processingDelay);
+});
+
 // Note: All endpoints now use dynamic data generation
 
 // Health check endpoint
@@ -189,8 +149,9 @@ app.listen(PORT, () => {
   console.log('Available mock endpoints:');
   console.log('  - GET /v2.0/Tree/TreeOfValues/{table_id}/{field_id} (REST API)');
   console.log('  - GET /v3.0/Tree/{table_id}/TableEntities?from=1&to=100&sort_by=CreationTime (REST API)');
+  console.log('  - POST /v3.0/Tree/{table_id}/TableEntities (REST API)');
   console.log('  - POST /trpc/treeEntities.getTreeOfValues (tRPC)');
   console.log('  - POST /trpc/treeEntities.getTableEntities (tRPC)');
-
+  console.log('  - POST /api/image (Image Service)');
   console.log('  - GET /health');
 });

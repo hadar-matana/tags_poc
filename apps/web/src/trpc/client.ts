@@ -4,7 +4,13 @@ import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
 import type { AppRouter } from '@zohan/api/trpc/routers/_app';
 import superjson from 'superjson';
 
-export const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export const trpcClient = createTRPCClient<AppRouter>({
   links: [

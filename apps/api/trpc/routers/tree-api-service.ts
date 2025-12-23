@@ -1,34 +1,37 @@
 import { publicProcedure, router } from '../init';
-import { TreeEntitiesClient } from '../../services/tree-entities-client';
-import type { TreeOfValuesResponse, TableEntitiesResponse } from '../../types/tree-api-types';
+import { TreeApiClient } from '../../services/tree-api-client';
+import type { TreeOfValuesResponse, TableEntity } from '../../types/tree-api-types';
 import {
   getTreeOfValuesSchema,
-  getTableEntitiesSchema,
   getAllTableEntitiesSchema,
-} from './tree-api-schemas';
+  getTableEntitiesSchema,
+} from './tree-api-validation-schemas';
+import { treeEntitiesConfig } from '../../config';
 
-const treeEntitiesClient = new TreeEntitiesClient();
+const treeApiClient = TreeApiClient.getInstance();
 
 export const treeEntitiesRouter = router({
   getTreeOfValues: publicProcedure
     .input(getTreeOfValuesSchema)
     .query(async ({ input }): Promise<TreeOfValuesResponse> => {
-      return await treeEntitiesClient.getTreeOfValues(input);
+      return treeApiClient.getTreeOfValues(input);
     }),
 
   getTableEntities: publicProcedure
     .input(getTableEntitiesSchema)
-    .query(async ({ input }): Promise<TableEntitiesResponse> => {
-      return await treeEntitiesClient.getTableEntities(input);
+    .query(async ({ input }): Promise<TableEntity[]> => {
+      console.log('tRPC getTableEntities called with input:', input);
+      const response = await treeApiClient.getTableEntities(input);
+      console.log('tRPC getTableEntities response entities count:', response.entities_list.length);
+      return response.entities_list;
     }),
 
   getAllTableEntities: publicProcedure
     .input(getAllTableEntitiesSchema)
-    .query(async ({ input }) => {
-      return await treeEntitiesClient.getTableEntitiesWithPagination(
-        input.table_id,
-        input.pageSize,
-        input.sort_by
-      );
-    }),
+    .query(async ({ input }): Promise<TableEntity[]> => {
+      const entities = await treeApiClient.getAllTableEntities(input);
+      // Filter entities that have all required properties (only if requiredProperties is defined and not empty)
+      return entities.filter(ent => 
+        treeEntitiesConfig.requiredProperties.every(propName => Boolean(ent.properties_list[propName])));      
+    })
 });

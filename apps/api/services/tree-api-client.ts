@@ -1,0 +1,165 @@
+import type { 
+  TreeOfValuesResponse, 
+  TableEntitiesResponse, 
+  TreeOfValuesParams, 
+  TableEntitiesParams, 
+  TableEntity,
+  TableEntitiesRequestBody
+} from '../types/tree-api-types';
+import type { GetAllTableEntitiesInput } from '../trpc/routers/tree-api-validation-schemas';
+import { treeEntitiesConfig, treeEntitiesEndpoints } from '../config';
+import { HttpClient } from './http-client';
+import env from '../env';
+
+export class TreeApiClient {
+  private static instance: TreeApiClient;
+  private httpClient?: HttpClient;
+  private baseUrl?: string;
+  private processedBaseUrl?: string;
+  private treeApiHeaders: Record<string, string> | undefined = treeEntitiesConfig.customHeaders;
+  private treeTableEntitiesReqFilterTemplate = treeEntitiesConfig.reqTableEntitiesFilterTemplate;
+
+  private constructor(baseUrl?: string) {
+    this.baseUrl = baseUrl;
+  }
+
+  public static getInstance(baseUrl?: string): TreeApiClient {
+    if (!TreeApiClient.instance) {
+      TreeApiClient.instance = new TreeApiClient(baseUrl);
+    }
+    return TreeApiClient.instance;
+  }
+
+  private getHttpClient(): HttpClient {
+    if (!this.httpClient) {
+      this.processedBaseUrl = this.processBaseUrl(this.baseUrl);
+      this.httpClient = new HttpClient(this.processedBaseUrl);
+    }
+    return this.httpClient;
+  }
+
+  async getTreeOfValues({ table_id, field_id }: TreeOfValuesParams): Promise<TreeOfValuesResponse> {
+    const endpoint = treeEntitiesEndpoints.treeOfValues(table_id, field_id);
+    return this.getHttpClient().get<TreeOfValuesResponse>(endpoint, this.treeApiHeaders);
+  }
+
+  async getTableEntities({ 
+    table_id, 
+    from = 1, 
+    to = treeEntitiesConfig.defaultPageSize, 
+    sort_by = treeEntitiesConfig.defaultSortBy,
+    filter
+  }: TableEntitiesParams): Promise<TableEntitiesResponse> {
+    const endpoint = treeEntitiesEndpoints.tableEntities(table_id, from, to, sort_by);
+    const requestBody: TableEntitiesRequestBody = JSON.parse(this.treeTableEntitiesReqFilterTemplate.replace('my_filter', JSON.stringify(filter)));
+
+    const response = await this.getHttpClient().post<TableEntitiesResponse>(endpoint, requestBody, this.treeApiHeaders);
+
+    const shouldNormalize =
+      this.shouldPreferImageProxy() &&
+      Array.isArray(response.entities_list) &&
+      response.entities_list.some(e => e?.properties_list?.thumbnail);
+
+    const entities = shouldNormalize
+      ? this.normalizeImageUrls(response.entities_list)
+      : response.entities_list;
+
+    return { ...response, entities_list: entities };
+  }
+
+  async getAllTableEntities({ table_id, pageSize = 100, sort_by, filter, from }: GetAllTableEntitiesInput): Promise<TableEntity[]> {
+    let allEntities: TableEntity[] = [];
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await this.getTableEntities({
+        table_id,
+        from,
+        to: from + pageSize - 1,
+        sort_by,
+        filter,
+      });
+
+      allEntities = allEntities.concat(response.entities_list);
+
+      if (response.entities_list.length < pageSize) {
+        hasMore = false;
+      } else {
+        from += pageSize;
+      }
+    }
+    const sortedEntities = allEntities.sort((a,b) => {
+      const timeA = a.properties_list.photo_time ? new Date(a.properties_list.photo_time).getTime():0;
+      const timeB = b.properties_list.photo_time ? new Date(b.properties_list.photo_time).getTime():0;
+      return timeB - timeA
+    })
+    const flattenedEntities = this.flattenArrayFields(sortedEntities);
+
+    return flattenedEntities;
+  }
+
+  private flattenArrayFields(entities: TableEntity[]): TableEntity[] {
+    return entities.map(entity => {
+      const flattened = { ...entity };
+      
+      // Flatten array fields
+      env.ARRAY_FIELDS_TO_FLATTEN.forEach(fieldName => {
+        if (flattened.properties_list && fieldName in flattened.properties_list) {
+          const value = flattened.properties_list[fieldName];
+          if (Array.isArray(value)) {
+            flattened.properties_list[fieldName] = value.join(', ');
+          }
+        }
+      });
+
+      // Format date fields
+      const dateFields = env.DATE_FIELDS.length > 0 ? env.DATE_FIELDS : ['photo_time'];
+      dateFields.forEach(fieldName => {
+        if (flattened.properties_list && fieldName in flattened.properties_list) {
+          const value = flattened.properties_list[fieldName];
+          if (value) {
+            const dateObj = new Date(value);
+            if (!isNaN(dateObj.getTime())) {
+              // Format as dd/MM/yyyy HH:mm
+              const day = String(dateObj.getDate()).padStart(2, '0');
+              const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+              const year = dateObj.getFullYear();
+              const hours = String(dateObj.getHours()).padStart(2, '0');
+              const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+              flattened.properties_list[fieldName] = `${day}/${month}/${year} ${hours}:${minutes}`;
+            }
+          }
+        }
+      });
+      
+      return flattened;
+    });
+  }
+
+  private processBaseUrl(baseUrl?: string): string {
+    return (baseUrl || treeEntitiesConfig.baseUrl).replace(/\/$/, '');
+  }
+
+  private shouldPreferImageProxy(): boolean {
+    return Boolean(treeEntitiesConfig.useTrpcImageUrls);
+  }
+
+    
+  private normalizeImageUrls(entities: TableEntity[]): TableEntity[] {
+    const base = this.processedBaseUrl || this.processBaseUrl(this.baseUrl);
+
+    return entities.map(entity => {
+      if (entity?.properties_list?.thumbnail) {
+        const preferredImageUrl = `${base}/api/image/${entity.exclusive_id.dataStore}/${entity.exclusive_id.tableId}`;
+        return {
+          ...entity,
+          properties_list: {
+            ...entity.properties_list,
+            img: preferredImageUrl,
+          },
+        };
+      }
+      return entity;
+    });
+  }
+}
